@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Auction Site | Display Live Bid Board for Events</title>
+    <meta name="description" content="Free auction display software for fundraisers, galas, and charity events. Display items and bids on TVs and projectors — no signup required.">
+    <meta name="keywords" content="auction display software, silent auction display, live auction display, charity auction screen, fundraiser bid display, auction leaderboard">
+    <link rel="canonical" href="https://freeauctionsite.com/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Free Auction Site",
+        "description": "Free auction display software for showing live bids on TV and projector screens",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web Browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+    </script>
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --navy: #0f1b2d;
+            --navy-mid: #1a2d47;
+            --navy-light: #243d5e;
+            --gold: #e8a020;
+            --gold-light: #f5c15a;
+            --gold-pale: #fef3d8;
+            --cream: #faf8f3;
+            --text: #1a1a2e;
+            --text-muted: #6b7280;
+            --green: #22c55e;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --border: #e5e7eb;
+            --radius: 12px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 48px rgba(0,0,0,0.12);
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #fff; line-height: 1.6; }
+        h1, h2, h3, h4 { font-family: 'Fraunces', serif; line-height: 1.2; }
+        a { color: inherit; text-decoration: none; }
+        img { max-width: 100%; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+        /* ===== BUTTONS ===== */
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.95rem; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+        .btn-primary { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+        .btn-primary:hover { background: var(--gold-light); border-color: var(--gold-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(232,160,32,0.35); }
+        .btn-secondary { background: transparent; color: var(--navy); border-color: var(--navy); }
+        .btn-secondary:hover { background: var(--navy); color: #fff; }
+        .btn-large { padding: 14px 32px; font-size: 1.05rem; border-radius: 10px; }
+        .btn-danger { background: #fee2e2; color: var(--red); border-color: #fca5a5; }
+        .btn-danger:hover { background: var(--red); color: #fff; border-color: var(--red); }
+        .btn-ghost { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.25); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.22); }
+
+        /* ===== NAVBAR ===== */
+        .navbar { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+        .navbar .container { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 700; color: var(--navy); }
+        .logo-icon { font-size: 1.4rem; }
+        .nav-links { display: flex; gap: 28px; }
+        .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); transition: color 0.2s; }
+        .nav-links a:hover { color: var(--navy); }
+
+        /* ===== HERO ===== */
+        .hero { background: var(--navy); color: #fff; padding: 90px 0 80px; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(232,160,32,0.18) 0%, transparent 70%); pointer-events: none; }
+        .hero h1 { font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 900; color: #fff; margin-bottom: 20px; }
+        .hero h1 span { color: var(--gold); }
+        .hero-subtitle { font-size: 1.15rem; color: rgba(255,255,255,0.75); max-width: 560px; margin: 0 auto 36px; }
+        .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 56px; }
+        .hero-stats { display: flex; gap: 48px; justify-content: center; flex-wrap: wrap; padding-top: 48px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .stat-number { display: block; font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 700; color: var(--gold); }
+        .stat-label { font-size: 0.85rem; color: rgba(255,255,255,0.6); }
+
+        /* ===== DEMO ===== */
+        .demo-section { padding: 64px 0; background: var(--cream); }
+        .demo-screen { background: var(--navy); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); max-width: 700px; margin: 0 auto; }
+        .demo-header { background: var(--navy-mid); padding: 18px 24px; text-align: center; }
+        .demo-header h2 { color: var(--gold); font-size: 1.2rem; }
+        .demo-items { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .demo-item { background: var(--navy-mid); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 16px; border-left: 3px solid var(--gold); }
+        .item-rank { font-family: 'Fraunces', serif; font-size: 1.3rem; font-weight: 700; color: var(--gold); min-width: 36px; }
+        .item-info { flex: 1; }
+        .item-info h3 { color: #fff; font-size: 0.95rem; margin-bottom: 2px; }
+        .item-info p { color: rgba(255,255,255,0.5); font-size: 0.8rem; }
+        .item-bid { text-align: right; }
+        .bid-label { display: block; font-size: 0.7rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.08em; }
+        .bid-amount { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; color: var(--gold); }
+        .demo-footer { background: var(--navy-mid); padding: 14px 24px; display: flex; justify-content: space-between; font-size: 0.85rem; color: rgba(255,255,255,0.6); }
+        .demo-footer strong { color: var(--gold-light); }
+
+        /* ===== SECTIONS ===== */
+        section { padding: 80px 0; }
+        section h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); text-align: center; margin-bottom: 48px; }
+
+        /* ===== HOW IT WORKS ===== */
+        .how-it-works { background: #fff; }
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; }
+        .step { text-align: center; }
+        .step-number { width: 52px; height: 52px; border-radius: 50%; background: var(--gold); color: var(--navy); font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+        .step h3 { font-size: 1.1rem; margin-bottom: 8px; }
+        .step p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* ===== FEATURES ===== */
+        .features { background: var(--cream); }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+        .feature { background: #fff; border-radius: var(--radius); padding: 28px; border: 1px solid var(--border); transition: box-shadow 0.2s; }
+        .feature:hover { box-shadow: var(--shadow); }
+        .feature-icon { font-size: 1.8rem; margin-bottom: 12px; }
+        .feature h3 { font-size: 1rem; margin-bottom: 8px; }
+        .feature p { color: var(--text-muted); font-size: 0.875rem; }
+
+        /* ===== USE CASES ===== */
+        .use-cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+        .use-case { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; text-align: center; transition: all 0.2s; }
+        .use-case:hover { border-color: var(--gold); box-shadow: var(--shadow); transform: translateY(-2px); }
+        .use-case-icon { font-size: 2rem; display: block; margin-bottom: 10px; }
+        .use-case h3 { font-size: 0.95rem; margin-bottom: 4px; }
+        .use-case p { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* ===== TOOL SECTION ===== */
+        .tool-section { background: var(--navy); padding: 80px 0; }
+        .tool-section h2 { color: #fff; }
+        .tool-section h2 span { color: var(--gold); }
+        .tool-subtitle { text-align: center; color: rgba(255,255,255,0.65); margin-top: -28px; margin-bottom: 48px; font-size: 1rem; }
+        .no-signup-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 999px; padding: 6px 16px; font-size: 0.82rem; font-weight: 600; margin-bottom: 32px; }
+        .tool-container { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+        @media (max-width: 768px) { .tool-container { grid-template-columns: 1fr; } }
+        .tool-panel { background: var(--navy-mid); border-radius: 14px; padding: 24px; border: 1px solid rgba(255,255,255,0.08); }
+        .tool-panel h3 { color: var(--gold-light); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 18px; font-family: 'DM Sans', sans-serif; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.82rem; color: rgba(255,255,255,0.65); margin-bottom: 5px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 9px 12px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); 
+            border-radius: 7px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; transition: border-color 0.2s;
+        }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: rgba(255,255,255,0.3); }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--gold); }
+        .form-group select { cursor: pointer; }
+        .form-group select option { background: var(--navy); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .tool-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+        .items-list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .items-list-header h3 { color: var(--gold-light); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Sans', sans-serif; margin: 0; }
+        .item-count-badge { background: var(--gold); color: var(--navy); font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+        .items-container { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+        .items-container::-webkit-scrollbar { width: 5px; }
+        .items-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
+        .items-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+        .empty-state { text-align: center; padding: 48px 24px; color: rgba(255,255,255,0.35); }
+        .empty-state p { font-size: 0.9rem; }
+        .auction-item-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; display: flex; align-items: center; gap: 12px; transition: border-color 0.2s; }
+        .auction-item-card.sold { opacity: 0.6; border-color: rgba(239,68,68,0.3); }
+        .auction-item-card .item-num { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; color: var(--gold); min-width: 28px; }
+        .auction-item-card .item-body { flex: 1; min-width: 0; }
+        .auction-item-card .item-body strong { display: block; color: #fff; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .auction-item-card .item-body span { font-size: 0.78rem; color: rgba(255,255,255,0.45); }
+        .auction-item-card .item-bid-edit { display: flex; align-items: center; gap: 8px; }
+        .bid-input { width: 80px; padding: 5px 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 700; text-align: right; }
+        .bid-input:focus { outline: none; border-color: var(--gold); }
+        .sold-badge { background: rgba(239,68,68,0.2); color: #fca5a5; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
+        .item-actions { display: flex; gap: 6px; }
+        .icon-btn { width: 28px; height: 28px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .icon-btn.sell { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .icon-btn.sell:hover { background: rgba(34,197,94,0.3); }
+        .icon-btn.del { background: rgba(239,68,68,0.15); color: #f87171; }
+        .icon-btn.del:hover { background: rgba(239,68,68,0.3); }
+        .total-raised { background: rgba(232,160,32,0.12); border: 1px solid rgba(232,160,32,0.25); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+        .total-label { font-size: 0.82rem; color: rgba(255,255,255,0.6); }
+        .total-amount { font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 700; color: var(--gold); }
+        .launch-hint { font-size: 0.78rem; color: rgba(255,255,255,0.4); text-align: center; margin-top: 10px; }
+
+        /* ===== TIMER SETTINGS ===== */
+        .timer-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+        .toggle { position: relative; width: 40px; height: 22px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; inset: 0; background: rgba(255,255,255,0.15); border-radius: 11px; cursor: pointer; transition: 0.2s; }
+        .toggle-slider:before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.2s; }
+        .toggle input:checked + .toggle-slider { background: var(--gold); }
+        .toggle input:checked + .toggle-slider:before { transform: translateX(18px); }
+        .toggle-label { font-size: 0.82rem; color: rgba(255,255,255,0.65); }
+
+        /* ===== PRICING ===== */
+        .pricing { background: var(--cream); }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
+        .pricing-card { background: #fff; border: 2px solid var(--border); border-radius: 16px; padding: 32px; position: relative; }
+        .pricing-card.featured { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(232,160,32,0.08); }
+        .pricing-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--gold); color: var(--navy); font-size: 0.75rem; font-weight: 700; padding: 4px 14px; border-radius: 999px; white-space: nowrap; }
+        .pricing-header h3 { font-size: 1.3rem; margin-bottom: 8px; }
+        .price { font-family: 'Fraunces', serif; font-size: 2.4rem; font-weight: 900; color: var(--navy); margin-bottom: 6px; }
+        .price span { font-size: 1rem; font-weight: 400; color: var(--text-muted); }
+        .pricing-header p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; }
+        .pricing-features { list-style: none; margin-bottom: 28px; display: flex; flex-direction: column; gap: 8px; }
+        .pricing-features li { font-size: 0.875rem; color: var(--text); }
+        .pricing-features li.muted { color: var(--text-muted); }
+
+        /* ===== TESTIMONIALS ===== */
+        .testimonials { background: var(--navy); }
+        .testimonials h2 { color: #fff; }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+        .testimonial { background: var(--navy-mid); border-radius: 14px; padding: 28px; border: 1px solid rgba(255,255,255,0.06); }
+        .testimonial p { color: rgba(255,255,255,0.8); font-size: 0.9rem; font-style: italic; margin-bottom: 20px; line-height: 1.7; }
+        .testimonial-author strong { display: block; color: #fff; font-size: 0.9rem; }
+        .testimonial-author span { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
+
+        /* ===== FAQ ===== */
+        .faq { background: #fff; }
+        .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; max-width: 900px; margin: 0 auto; }
+        .faq-item h3 { font-size: 1rem; margin-bottom: 8px; }
+        .faq-item p { color: var(--text-muted); font-size: 0.875rem; line-height: 1.7; }
+
+        /* ===== CTA ===== */
+        .cta { background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy) 100%); text-align: center; padding: 80px 0; }
+        .cta h2 { color: #fff; margin-bottom: 16px; }
+        .cta p { color: rgba(255,255,255,0.65); max-width: 500px; margin: 0 auto 36px; }
+
+        /* ===== FOOTER ===== */
+        .footer { background: var(--navy); border-top: 1px solid rgba(255,255,255,0.06); padding: 56px 0 32px; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+        @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+        .footer-brand p { font-size: 0.85rem; color: rgba(255,255,255,0.45); margin-top: 12px; max-width: 240px; }
+        .footer-links h4 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
+        .footer-links ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .footer-links a { font-size: 0.875rem; color: rgba(255,255,255,0.6); transition: color 0.2s; }
+        .footer-links a:hover { color: var(--gold-light); }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 24px; text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+
+        /* ===== DISPLAY PAGE ===== */
+        #displayPage { display: none; position: fixed; inset: 0; z-index: 9999; background: var(--navy); color: #fff; font-family: 'DM Sans', sans-serif; overflow: hidden; }
+        #displayPage.active { display: flex; flex-direction: column; }
+        .dp-header { background: var(--navy-mid); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; }
+        .dp-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; color: #fff; }
+        .dp-subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+        .dp-meta { display: flex; align-items: center; gap: 24px; }
+        .dp-total { text-align: right; }
+        .dp-total-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.45); }
+        .dp-total-amount { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+        .dp-body { flex: 1; display: grid; grid-template-columns: 1fr 280px; overflow: hidden; }
+        .dp-main { padding: 24px; overflow-y: auto; }
+        .dp-sidebar { background: rgba(0,0,0,0.3); border-left: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; overflow: hidden; }
+        .dp-sidebar-section { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .dp-sidebar-section h4 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.35); margin-bottom: 12px; }
+        .dp-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .dp-item { background: var(--navy-mid); border-radius: 12px; padding: 18px; border-left: 3px solid var(--gold); position: relative; transition: transform 0.2s; }
+        .dp-item.highlight { animation: bidFlash 0.8s ease; }
+        .dp-item.sold-item { border-left-color: var(--red); opacity: 0.6; }
+        @keyframes bidFlash {
+            0% { background: var(--navy-mid); }
+            25% { background: rgba(232,160,32,0.25); box-shadow: 0 0 30px rgba(232,160,32,0.3); }
+            100% { background: var(--navy-mid); }
+        }
+        .dp-item-num { font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-bottom: 4px; }
+        .dp-item-name { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 2px; }
+        .dp-item-desc { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 12px; }
+        .dp-item-bid { display: flex; align-items: baseline; gap: 8px; }
+        .dp-bid-label { font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; }
+        .dp-bid-amount { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 900; color: var(--gold); }
+        .dp-start { font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-top: 4px; }
+        .dp-sold-overlay { position: absolute; inset: 0; background: rgba(239,68,68,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .dp-sold-text { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 900; color: #ef4444; letter-spacing: 0.08em; border: 2px solid #ef4444; padding: 4px 16px; border-radius: 6px; }
+        /* Countdown timer on card */
+        .dp-item-timer { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+        .timer-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .timer-fill { height: 100%; border-radius: 2px; transition: width 1s linear, background 1s; }
+        .timer-text { font-size: 0.75rem; font-weight: 600; min-width: 40px; text-align: right; }
+        .timer-green { background: var(--green); color: var(--green); }
+        .timer-amber { background: var(--amber); color: var(--amber); }
+        .timer-red { background: var(--red); color: var(--red); animation: timerPulse 0.5s ease infinite alternate; }
+        @keyframes timerPulse { to { opacity: 0.5; } }
+        /* Bid history */
+        .bid-history { flex: 1; overflow-y: auto; padding: 8px 16px 16px; }
+        .bid-history::-webkit-scrollbar { width: 4px; }
+        .bid-history::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .bid-entry { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+        .bid-entry-name { flex: 1; font-size: 0.8rem; color: rgba(255,255,255,0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bid-entry-amount { font-size: 0.85rem; font-weight: 700; color: var(--gold-light); }
+        .bid-entry-time { font-size: 0.7rem; color: rgba(255,255,255,0.3); }
+        /* Upcoming items */
+        .upcoming-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+        .upcoming-dot { width: 6px; height: 6px; background: rgba(255,255,255,0.25); border-radius: 50%; flex-shrink: 0; }
+        .upcoming-name { font-size: 0.8rem; color: rgba(255,255,255,0.55); }
+        .upcoming-start { font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-left: auto; }
+        /* Close button */
+        .dp-close { background: rgba(255,255,255,0.1); border: none; color: #fff; cursor: pointer; font-size: 0.85rem; padding: 8px 16px; border-radius: 7px; transition: background 0.2s; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 6px; }
+        .dp-close:hover { background: rgba(255,255,255,0.18); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero-stats { gap: 28px; }
+            .dp-body { grid-template-columns: 1fr; }
+            .dp-sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== DISPLAY PAGE (overlay) ===== -->
+<div id="displayPage">
+    <div class="dp-header">
+        <div>
+            <div class="dp-title" id="dp-title">Auction Display</div>
+            <div class="dp-subtitle" id="dp-subtitle">Live Auction</div>
+        </div>
+        <div class="dp-meta">
+            <div class="dp-total">
+                <div class="dp-total-label">Total Raised</div>
+                <div class="dp-total-amount" id="dp-total">$0</div>
+            </div>
+            <button class="dp-close" onclick="closeDisplay()">✕ Close Display</button>
+        </div>
+    </div>
+    <div class="dp-body">
+        <div class="dp-main">
+            <div class="dp-items-grid" id="dp-items-grid"></div>
+        </div>
+        <div class="dp-sidebar">
+            <div class="dp-sidebar-section">
+                <h4>📋 Up Next</h4>
+                <div id="dp-upcoming"></div>
+            </div>
+            <div class="dp-sidebar-section">
+                <h4>⚡ Recent Bids</h4>
+            </div>
+            <div class="bid-history" id="dp-bid-history">
+                <div style="font-size:0.8rem;color:rgba(255,255,255,0.3);padding:8px 0">No bids yet</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MARKETING PAGE ===== -->
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="container">
+        <a href="/" class="logo">
+            <span class="logo-icon">📺</span>
+            <span class="logo-text">FreeAuctionSite</span>
+        </a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#use-cases">Use Cases</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+        </div>
+        <a href="#tool" class="btn btn-primary">Create Display Free</a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+    <div class="container">
+        <h1>The <span>Free</span> Auction Display<br>Built for Your Event</h1>
+        <p class="hero-subtitle">Show live bids on any TV or projector. No signup, no software, no stress — just add your items and go.</p>
+        <div class="hero-cta">
+            <a href="#tool" class="btn btn-primary btn-large">🚀 Create Free Display</a>
+            <a href="#demo" class="btn btn-ghost btn-large">See Demo</a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat">
+                <span class="stat-number">10,000+</span>
+                <span class="stat-label">Events Powered</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">$2M+</span>
+                <span class="stat-label">Raised by Users</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">100%</span>
+                <span class="stat-label">Free to Start</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Demo -->
+<section id="demo" class="demo-section">
+    <div class="container">
+        <h2 style="font-size:1.8rem;margin-bottom:28px;text-align:center">What it looks like on screen</h2>
+        <div class="demo-screen">
+            <div class="demo-header">
+                <h2>Spring Gala 2026 — Silent Auction</h2>
+            </div>
+            <div class="demo-items">
+                <div class="demo-item">
+                    <div class="item-rank">#1</div>
+                    <div class="item-info">
+                        <h3>Weekend Getaway Package</h3>
+                        <p>2 nights at Grand Resort</p>
+                    </div>
+                    <div class="item-bid">
+                        <span class="bid-label">Current Bid</span>
+                        <span class="bid-amount">$450</span>
+                    </div>
+                </div>
+                <div class="demo-item">
+                    <div class="item-rank">#2</div>
+                    <div class="item-info">
+                        <h3>Private Chef Dinner for 8</h3>
+                        <p>In-home dining experience</p>
+                    </div>
+                    <div class="item-bid">
+                        <span class="bid-label">Current Bid</span>
+                        <span class="bid-amount">$380</span>
+                    </div>
+                </div>
+                <div class="demo-item">
+                    <div class="item-rank">#3</div>
+                    <div class="item-info">
+                        <h3>Golf Foursome + Lunch</h3>
+                        <p>Pine Valley Country Club</p>
+                    </div>
+                    <div class="item-bid">
+                        <span class="bid-label">Current Bid</span>
+                        <span class="bid-amount">$320</span>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-footer">
+                <span>Total Raised: <strong>$4,250</strong></span>
+                <span>Items: 12 | Bidders: 47</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works">
+    <div class="container">
+        <h2>Up and Running in 3 Steps</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Add Your Items</h3>
+                <p>Enter item names, descriptions, and starting bids. Set a countdown timer if you want time pressure.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Launch the Display</h3>
+                <p>Click Launch Display — a fullscreen view opens instantly. Drag it to your TV or projector screen.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Update Bids Live</h3>
+                <p>Change bids from the tool panel. The display flashes and updates in real time as you type.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section id="features" class="features">
+    <div class="container">
+        <h2>Everything You Need for Auction Displays</h2>
+        <div class="features-grid">
+            <div class="feature">
+                <div class="feature-icon">⏱️</div>
+                <h3>Countdown Timer</h3>
+                <p>Set a time limit per item. The bar turns amber, then red as it counts down — keeping bidders on edge.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>Live Bid Flash</h3>
+                <p>Every new bid lights up the item card with a golden flash animation. Guests know instantly.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📋</div>
+                <h3>Bid History Feed</h3>
+                <p>A scrolling sidebar shows each bid with item name, amount, and timestamp in real time.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔜</div>
+                <h3>Up Next Queue</h3>
+                <p>Show upcoming items on the sidebar so bidders know what's coming and plan their strategy.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✅</div>
+                <h3>Mark Items SOLD</h3>
+                <p>One click marks an item sold. It shows a red SOLD stamp on the display and locks the final price.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h3>No Signup Required</h3>
+                <p>Start creating your display immediately. Your data saves locally in your browser — nothing stored on servers.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Use Cases -->
+<section id="use-cases">
+    <div class="container">
+        <h2>Built for Every Type of Fundraiser</h2>
+        <div class="use-cases-grid">
+            <a href="/school-auction-display" class="use-case">
+                <span class="use-case-icon">🏫</span>
+                <h3>School Fundraisers</h3>
+                <p>PTA auctions, sports boosters, and school galas</p>
+            </a>
+            <a href="/nonprofit-auction-display" class="use-case">
+                <span class="use-case-icon">💝</span>
+                <h3>Nonprofit Events</h3>
+                <p>Charity galas, benefit dinners, and fundraising events</p>
+            </a>
+            <a href="/church-auction-display" class="use-case">
+                <span class="use-case-icon">⛪</span>
+                <h3>Church Fundraisers</h3>
+                <p>Ministry fundraisers, mission trips, and community events</p>
+            </a>
+            <a href="/gala-auction-display" class="use-case">
+                <span class="use-case-icon">🎭</span>
+                <h3>Gala Events</h3>
+                <p>Black-tie galas, award ceremonies, and formal fundraisers</p>
+            </a>
+            <a href="/sports-booster-auction-display" class="use-case">
+                <span class="use-case-icon">🏆</span>
+                <h3>Sports Boosters</h3>
+                <p>Athletic fundraisers, team auctions, and sports banquets</p>
+            </a>
+            <a href="/corporate-charity-auction-display" class="use-case">
+                <span class="use-case-icon">🏢</span>
+                <h3>Corporate Events</h3>
+                <p>Company fundraisers, client appreciation, and team events</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- THE TOOL -->
+<section id="tool" class="tool-section">
+    <div class="container">
+        <h2>Create Your <span>Auction Display</span></h2>
+        <p class="tool-subtitle">Add items below, then click "Launch Display" to open your fullscreen auction board.</p>
+        <div style="text-align:center;margin-bottom:32px">
+            <span class="no-signup-badge">✓ No signup · Works in your browser · Data saved locally</span>
+        </div>
+
+        <div class="tool-container">
+            <!-- Sidebar: Settings + Add Item -->
+            <div style="display:flex;flex-direction:column;gap:20px">
+                <!-- Event Settings -->
+                <div class="tool-panel">
+                    <h3>🎪 Event Settings</h3>
+                    <div class="form-group">
+                        <label>Event Name</label>
+                        <input type="text" id="eventName" placeholder="Spring Gala 2026">
+                    </div>
+                    <div class="form-group">
+                        <label>Subtitle</label>
+                        <input type="text" id="eventSubtitle" placeholder="Silent Auction">
+                    </div>
+                    <div class="timer-toggle">
+                        <label class="toggle">
+                            <input type="checkbox" id="useTimer" onchange="toggleTimerSettings()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Enable countdown timer on items</span>
+                    </div>
+                    <div id="timerSettings" style="display:none">
+                        <div class="form-group">
+                            <label>Default timer duration</label>
+                            <select id="timerDuration">
+                                <option value="300">5 minutes</option>
+                                <option value="600" selected>10 minutes</option>
+                                <option value="900">15 minutes</option>
+                                <option value="1800">30 minutes</option>
+                                <option value="3600">1 hour</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Item -->
+                <div class="tool-panel">
+                    <h3>➕ Add Auction Item</h3>
+                    <div class="form-group">
+                        <label>Item Name *</label>
+                        <input type="text" id="itemName" placeholder="Weekend Getaway Package">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="itemDescription" placeholder="2 nights at Grand Resort">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Starting Bid ($)</label>
+                            <input type="number" id="startingBid" placeholder="100" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Current Bid ($)</label>
+                            <input type="number" id="currentBid" placeholder="150" min="0">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="addItem()">+ Add Item</button>
+                </div>
+            </div>
+
+            <!-- Main: Items List + Actions -->
+            <div class="tool-panel">
+                <div class="items-list-header">
+                    <h3>📦 Auction Items</h3>
+                    <span class="item-count-badge" id="itemCount">0</span>
+                </div>
+                <div class="items-container" id="itemsList">
+                    <div class="empty-state">
+                        <p>No items added yet.<br>Add your first auction item to get started.</p>
+                    </div>
+                </div>
+                <div class="total-raised">
+                    <div>
+                        <div class="total-label">Total Raised</div>
+                    </div>
+                    <div class="total-amount" id="totalRaised">$0</div>
+                </div>
+                <div class="tool-actions">
+                    <button class="btn btn-secondary" onclick="clearAll()" style="margin-right:auto">🗑 Clear All</button>
+                    <button class="btn btn-primary btn-large" onclick="launchDisplay()">📺 Launch Display</button>
+                </div>
+                <p class="launch-hint">Opens fullscreen · Press Esc to close · Data syncs instantly</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing" class="pricing">
+    <div class="container">
+        <h2>Simple, Transparent Pricing</h2>
+        <p style="text-align:center;color:var(--text-muted);margin-top:-28px;margin-bottom:48px">Start free. Upgrade only if you need more.</p>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <h3>Free</h3>
+                    <div class="price">$0</div>
+                    <p>Forever free</p>
+                </div>
+                <ul class="pricing-features">
+                    <li>✓ Up to 10 auction items</li>
+                    <li>✓ Real-time bid updates</li>
+                    <li>✓ Countdown timers</li>
+                    <li>✓ Bid history feed</li>
+                    <li>✓ No signup required</li>
+                    <li class="muted">✗ FreeAuctionSite watermark</li>
+                    <li class="muted">✗ Custom branding</li>
+                </ul>
+                <a href="#tool" class="btn btn-secondary">Get Started Free</a>
+            </div>
+            <div class="pricing-card featured">
+                <div class="pricing-badge">Most Popular</div>
+                <div class="pricing-header">
+                    <h3>Pro</h3>
+                    <div class="price">$9<span>/month</span></div>
+                    <p>For regular fundraisers</p>
+                </div>
+                <ul class="pricing-features">
+                    <li>✓ Unlimited auction items</li>
+                    <li>✓ Real-time bid updates</li>
+                    <li>✓ Multiple display modes</li>
+                    <li>✓ Custom colors & branding</li>
+                    <li>✓ Remove watermark</li>
+                    <li>✓ Priority support</li>
+                    <li>✓ Analytics dashboard</li>
+                </ul>
+                <a href="#" class="btn btn-primary">Start Pro Trial</a>
+            </div>
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <h3>Event</h3>
+                    <div class="price">$29<span> one-time</span></div>
+                    <p>For single events</p>
+                </div>
+                <ul class="pricing-features">
+                    <li>✓ Unlimited items for 1 event</li>
+                    <li>✓ All Pro features</li>
+                    <li>✓ Valid for 30 days</li>
+                    <li>✓ Custom branding</li>
+                    <li>✓ No watermark</li>
+                    <li>✓ Export bid history</li>
+                    <li>✓ Email support</li>
+                </ul>
+                <a href="#" class="btn btn-secondary">Buy Event Pass</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+    <div class="container">
+        <h2>Trusted by Fundraisers Everywhere</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial">
+                <p>"We used FreeAuctionSite for our school auction and it was SO much easier than our old paper bid sheets. Parents loved seeing the live leaderboard!"</p>
+                <div class="testimonial-author">
+                    <strong>Sarah M.</strong>
+                    <span>PTA President, Lincoln Elementary</span>
+                </div>
+            </div>
+            <div class="testimonial">
+                <p>"Finally, a simple solution that just works. We projected it on a big screen at our gala and the bidding competition really took off."</p>
+                <div class="testimonial-author">
+                    <strong>David K.</strong>
+                    <span>Event Director, Hope Foundation</span>
+                </div>
+            </div>
+            <div class="testimonial">
+                <p>"I set up our entire auction display in 10 minutes. No complex software, no expensive subscriptions. This is exactly what small nonprofits need."</p>
+                <div class="testimonial-author">
+                    <strong>Maria L.</strong>
+                    <span>Executive Director, Community Cares</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="faq">
+    <div class="container">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h3>Do I need to create an account?</h3>
+                <p>No! You can create and launch an auction display without signing up. Everything is saved locally in your browser. Create an account only to save displays across devices.</p>
+            </div>
+            <div class="faq-item">
+                <h3>How do I display it on a TV or projector?</h3>
+                <p>Click "Launch Display" and a fullscreen view opens in the same browser. Then drag the window to your TV screen or press F11 for full-screen mode. That's it!</p>
+            </div>
+            <div class="faq-item">
+                <h3>Can I update bids from my phone?</h3>
+                <p>Yes! Keep the tool open on your phone. Update bids in the item list and the display updates instantly — they share data in real time via your browser's local storage.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What does the countdown timer do?</h3>
+                <p>When enabled, each item card shows a progress bar that counts down from your set duration. It turns amber at 30% remaining and flashes red at 10% — creating urgency for bidders.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What if my internet goes down during the event?</h3>
+                <p>The display continues showing the last data since everything runs locally in your browser. No internet is required after the page loads.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Can I customize the colors to match our event?</h3>
+                <p>Free accounts use our default theme. Pro and Event accounts can customize colors, add logos, and match your event branding.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <div class="container">
+        <h2>Ready to Simplify Your Next Auction?</h2>
+        <p>Join thousands of schools, nonprofits, and organizations using FreeAuctionSite to power their fundraising events.</p>
+        <a href="#tool" class="btn btn-primary btn-large">Create Free Auction Display</a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="logo" style="color:#fff">
+                    <span class="logo-icon">📺</span>
+                    <span class="logo-text">FreeAuctionSite</span>
+                </a>
+                <p>Simple, free auction display software for schools, nonprofits, and fundraisers.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Use Cases</h4>
+                <ul>
+                    <li><a href="/school-auction-display">School Auctions</a></li>
+                    <li><a href="/nonprofit-auction-display">Nonprofit Events</a></li>
+                    <li><a href="/church-auction-display">Church Fundraisers</a></li>
+                    <li><a href="/gala-auction-display">Gala Events</a></li>
+                    <li><a href="/silent-auction-display">Silent Auctions</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="/blog/how-to-display-auction-items-on-tv">Setup Guide</a></li>
+                    <li><a href="/templates/silent-auction-bid-sheet">Templates</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 FreeAuctionSite. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+// ===== STATE =====
+let auctionData = {
+    eventName: 'My Auction',
+    eventSubtitle: 'Live Auction',
+    items: [],
+    bidHistory: [],
+    useTimer: false,
+    timerDuration: 600
+};
+let timers = {}; // item timers
+let displayActive = false;
+let displayInterval = null;
+
+// Load from localStorage
+function loadData() {
+    const saved = localStorage.getItem('freeAuctionData');
+    if (saved) {
+        try {
+            auctionData = JSON.parse(saved);
+        } catch(e) {}
+    }
+    // Restore UI
+    document.getElementById('eventName').value = auctionData.eventName || '';
+    document.getElementById('eventSubtitle').value = auctionData.eventSubtitle || '';
+    document.getElementById('useTimer').checked = auctionData.useTimer || false;
+    document.getElementById('timerDuration').value = auctionData.timerDuration || 600;
+    toggleTimerSettings();
+    renderItemsList();
+}
+
+function saveData() {
+    auctionData.eventName = document.getElementById('eventName').value || 'My Auction';
+    auctionData.eventSubtitle = document.getElementById('eventSubtitle').value || 'Live Auction';
+    auctionData.useTimer = document.getElementById('useTimer').checked;
+    auctionData.timerDuration = parseInt(document.getElementById('timerDuration').value);
+    localStorage.setItem('freeAuctionData', JSON.stringify(auctionData));
+}
+
+// ===== TOOL: ADD ITEM =====
+function addItem() {
+    const name = document.getElementById('itemName').value.trim();
+    if (!name) { alert('Please enter an item name.'); return; }
+    const item = {
+        id: Date.now(),
+        name,
+        description: document.getElementById('itemDescription').value.trim(),
+        startingBid: parseFloat(document.getElementById('startingBid').value) || 0,
+        currentBid: parseFloat(document.getElementById('currentBid').value) || 0,
+        sold: false,
+        timerStart: Date.now(),
+        timerDuration: parseInt(document.getElementById('timerDuration').value) || 600
+    };
+    if (auctionData.items.length >= 10) {
+        alert('Free plan is limited to 10 items. Upgrade to Pro for unlimited items.');
+        return;
+    }
+    auctionData.items.push(item);
+    // Clear form
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemDescription').value = '';
+    document.getElementById('startingBid').value = '';
+    document.getElementById('currentBid').value = '';
+    saveData();
+    renderItemsList();
+}
+
+function renderItemsList() {
+    const container = document.getElementById('itemsList');
+    const countBadge = document.getElementById('itemCount');
+    countBadge.textContent = auctionData.items.length;
+    if (!auctionData.items.length) {
+        container.innerHTML = '<div class="empty-state"><p>No items added yet.<br>Add your first auction item to get started.</p></div>';
+        updateTotal();
+        return;
+    }
+    container.innerHTML = auctionData.items.map((item, i) => `
+        <div class="auction-item-card ${item.sold ? 'sold' : ''}">
+            <div class="item-num">#${i+1}</div>
+            <div class="item-body">
+                <strong>${escHtml(item.name)}</strong>
+                <span>${item.description ? escHtml(item.description) : 'No description'}</span>
+            </div>
+            <div class="item-bid-edit">
+                ${item.sold ? '<span class="sold-badge">SOLD</span>' : `
+                    <span style="color:rgba(255,255,255,0.4);font-size:0.8rem">$</span>
+                    <input class="bid-input" type="number" value="${item.currentBid}" 
+                        onchange="updateBid(${item.id}, this.value)" 
+                        onblur="updateBid(${item.id}, this.value)" min="0">
+                `}
+            </div>
+            <div class="item-actions">
+                ${!item.sold ? `<button class="icon-btn sell" title="Mark as Sold" onclick="markSold(${item.id})">✓</button>` : ''}
+                <button class="icon-btn del" title="Remove item" onclick="removeItem(${item.id})">✕</button>
+            </div>
+        </div>
+    `).join('');
+    updateTotal();
+}
+
+function updateBid(id, value) {
+    const item = auctionData.items.find(i => i.id === id);
+    if (!item || item.sold) return;
+    const newBid = parseFloat(value) || 0;
+    const oldBid = item.currentBid;
+    if (newBid === oldBid) return;
+    item.currentBid = newBid;
+    // Add to history
+    auctionData.bidHistory.unshift({
+        itemName: item.name,
+        amount: newBid,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+    if (auctionData.bidHistory.length > 50) auctionData.bidHistory.pop();
+    saveData();
+    updateTotal();
+    if (displayActive) {
+        updateDisplayItem(id);
+        renderBidHistory();
+    }
+}
+
+function markSold(id) {
+    const item = auctionData.items.find(i => i.id === id);
+    if (!item) return;
+    item.sold = true;
+    auctionData.bidHistory.unshift({
+        itemName: item.name + ' 🔨',
+        amount: item.currentBid,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+    saveData();
+    renderItemsList();
+    if (displayActive) { renderDisplayItems(); renderBidHistory(); }
+}
+
+function removeItem(id) {
+    auctionData.items = auctionData.items.filter(i => i.id !== id);
+    saveData();
+    renderItemsList();
+    if (displayActive) renderDisplayItems();
+}
+
+function clearAll() {
+    if (!auctionData.items.length) return;
+    if (!confirm('Clear all items and bid history?')) return;
+    auctionData.items = [];
+    auctionData.bidHistory = [];
+    saveData();
+    renderItemsList();
+    if (displayActive) renderDisplayItems();
+}
+
+function updateTotal() {
+    const total = auctionData.items.reduce((sum, i) => sum + i.currentBid, 0);
+    document.getElementById('totalRaised').textContent = '$' + total.toLocaleString();
+}
+
+function toggleTimerSettings() {
+    const enabled = document.getElementById('useTimer').checked;
+    document.getElementById('timerSettings').style.display = enabled ? 'block' : 'none';
+}
+
+// ===== DISPLAY =====
+function launchDisplay() {
+    saveData();
+    if (!auctionData.items.length) { alert('Please add at least one item before launching the display.'); return; }
+    displayActive = true;
+    document.getElementById('displayPage').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    renderDisplayFull();
+    // Start timer interval
+    if (displayInterval) clearInterval(displayInterval);
+    displayInterval = setInterval(tickTimers, 1000);
+}
+
+function closeDisplay() {
+    displayActive = false;
+    document.getElementById('displayPage').classList.remove('active');
+    document.body.style.overflow = '';
+    if (displayInterval) clearInterval(displayInterval);
+}
+
+// Escape key to close
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && displayActive) closeDisplay(); });
+
+function renderDisplayFull() {
+    document.getElementById('dp-title').textContent = auctionData.eventName || 'Auction';
+    document.getElementById('dp-subtitle').textContent = auctionData.eventSubtitle || '';
+    renderDisplayItems();
+    renderBidHistory();
+    renderUpcoming();
+    updateDisplayTotal();
+}
+
+function renderDisplayItems() {
+    const grid = document.getElementById('dp-items-grid');
+    if (!auctionData.items.length) { grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:1rem;padding:32px">No items added yet.</div>'; return; }
+    grid.innerHTML = auctionData.items.map((item, i) => buildDisplayItem(item, i)).join('');
+}
+
+function buildDisplayItem(item, i) {
+    const timerHtml = (!item.sold && auctionData.useTimer) ? buildTimerBar(item) : '';
+    return `
+    <div class="dp-item ${item.sold ? 'sold-item' : ''}" id="dp-item-${item.id}">
+        <div class="dp-item-num">Item #${i+1}</div>
+        <div class="dp-item-name">${escHtml(item.name)}</div>
+        ${item.description ? `<div class="dp-item-desc">${escHtml(item.description)}</div>` : ''}
+        <div class="dp-item-bid">
+            <div>
+                <div class="dp-bid-label">Current Bid</div>
+                <div class="dp-bid-amount" id="dp-bid-${item.id}">$${item.currentBid.toLocaleString()}</div>
+            </div>
+        </div>
+        <div class="dp-start">Starting: $${item.startingBid.toLocaleString()}</div>
+        ${timerHtml}
+        ${item.sold ? `<div class="dp-sold-overlay"><div class="dp-sold-text">SOLD</div></div>` : ''}
+    </div>`;
+}
+
+function buildTimerBar(item) {
+    const elapsed = (Date.now() - item.timerStart) / 1000;
+    const duration = item.timerDuration || 600;
+    const remaining = Math.max(0, duration - elapsed);
+    const pct = Math.max(0, (remaining / duration) * 100);
+    const cls = pct > 30 ? 'timer-green' : pct > 10 ? 'timer-amber' : 'timer-red';
+    const mins = Math.floor(remaining / 60);
+    const secs = Math.floor(remaining % 60);
+    const timeStr = remaining <= 0 ? 'TIME' : `${mins}:${secs.toString().padStart(2,'0')}`;
+    return `
+    <div class="dp-item-timer" id="dp-timer-${item.id}">
+        <div class="timer-bar"><div class="timer-fill ${cls}" id="dp-tfill-${item.id}" style="width:${pct}%"></div></div>
+        <div class="timer-text ${cls}" id="dp-ttext-${item.id}">${timeStr}</div>
+    </div>`;
+}
+
+function updateDisplayItem(id) {
+    const item = auctionData.items.find(i => i.id === id);
+    if (!item) return;
+    const bidEl = document.getElementById('dp-bid-' + id);
+    if (bidEl) {
+        bidEl.textContent = '$' + item.currentBid.toLocaleString();
+        // Flash the card
+        const card = document.getElementById('dp-item-' + id);
+        if (card) {
+            card.classList.remove('highlight');
+            void card.offsetWidth;
+            card.classList.add('highlight');
+        }
+    }
+    updateDisplayTotal();
+}
+
+function updateDisplayTotal() {
+    const total = auctionData.items.reduce((sum, i) => sum + i.currentBid, 0);
+    const el = document.getElementById('dp-total');
+    if (el) el.textContent = '$' + total.toLocaleString();
+}
+
+function renderBidHistory() {
+    const container = document.getElementById('dp-bid-history');
+    if (!container) return;
+    if (!auctionData.bidHistory.length) {
+        container.innerHTML = '<div style="font-size:0.8rem;color:rgba(255,255,255,0.3);padding:8px 0">No bids yet</div>';
+        return;
+    }
+    container.innerHTML = auctionData.bidHistory.slice(0, 20).map(b => `
+        <div class="bid-entry">
+            <div class="bid-entry-name">${escHtml(b.itemName)}</div>
+            <div class="bid-entry-amount">$${b.amount.toLocaleString()}</div>
+            <div class="bid-entry-time">${b.time}</div>
+        </div>
+    `).join('');
+}
+
+function renderUpcoming() {
+    const container = document.getElementById('dp-upcoming');
+    if (!container) return;
+    const notSold = auctionData.items.filter(i => !i.sold).slice(0, 4);
+    if (!notSold.length) { container.innerHTML = '<div style="font-size:0.8rem;color:rgba(255,255,255,0.3)">All items active</div>'; return; }
+    container.innerHTML = notSold.map(i => `
+        <div class="upcoming-item">
+            <div class="upcoming-dot"></div>
+            <div class="upcoming-name">${escHtml(i.name)}</div>
+            <div class="upcoming-start">$${i.startingBid.toLocaleString()}</div>
+        </div>
+    `).join('');
+}
+
+function tickTimers() {
+    if (!displayActive || !auctionData.useTimer) return;
+    auctionData.items.forEach(item => {
+        if (item.sold) return;
+        const elapsed = (Date.now() - item.timerStart) / 1000;
+        const duration = item.timerDuration || 600;
+        const remaining = Math.max(0, duration - elapsed);
+        const pct = Math.max(0, (remaining / duration) * 100);
+        const cls = pct > 30 ? 'timer-green' : pct > 10 ? 'timer-amber' : 'timer-red';
+        const mins = Math.floor(remaining / 60);
+        const secs = Math.floor(remaining % 60);
+        const timeStr = remaining <= 0 ? 'TIME' : `${mins}:${secs.toString().padStart(2,'0')}`;
+        const fill = document.getElementById('dp-tfill-' + item.id);
+        const text = document.getElementById('dp-ttext-' + item.id);
+        if (fill) { fill.style.width = pct + '%'; fill.className = 'timer-fill ' + cls; }
+        if (text) { text.textContent = timeStr; text.className = 'timer-text ' + cls; }
+    });
+}
+
+// Utility
+function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Event listeners for auto-save
+['eventName','eventSubtitle'].forEach(id => {
+    document.getElementById(id).addEventListener('input', saveData);
+});
+document.getElementById('useTimer').addEventListener('change', saveData);
+document.getElementById('timerDuration').addEventListener('change', saveData);
+
+// Init
+loadData();
+</script>
+</body>
+</html>
