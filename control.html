@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Panel | FreeAuctionSite</title>
+    <meta name="robots" content="noindex">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary: #6366f1;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-600: #475569;
+            --gray-900: #0f172a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gray-50);
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .event-info {
+            background: white;
+            margin: 16px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .event-info h2 {
+            color: var(--gray-900);
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .event-info p {
+            color: var(--gray-600);
+            font-size: 1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .stat {
+            background: var(--gray-100);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .items-section {
+            padding: 0 16px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .section-header h3 {
+            font-size: 1.125rem;
+            color: var(--gray-900);
+        }
+
+        .item-count {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .item-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .item-rank {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            min-width: 45px;
+        }
+
+        .item:nth-child(1) .item-rank { color: #fbbf24; }
+        .item:nth-child(2) .item-rank { color: #94a3b8; }
+        .item:nth-child(3) .item-rank { color: #cd7f32; }
+
+        .item-info {
+            flex: 1;
+            margin: 0 12px;
+        }
+
+        .item-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .item-description {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .item-bid-info {
+            text-align: right;
+        }
+
+        .current-bid {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .starting-bid {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: #4f46e5;
+            transform: scale(0.98);
+        }
+
+        .btn-danger {
+            background: var(--gray-100);
+            color: var(--danger);
+        }
+
+        .btn-danger:active {
+            background: var(--gray-200);
+            transform: scale(0.98);
+        }
+
+        .btn-add {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-size: 2rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-add:active {
+            transform: scale(0.95);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 1000;
+            padding: 0;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-height: 90vh;
+            border-radius: 20px 20px 0 0;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+        }
+
+        .close-btn {
+            background: var(--gray-100);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--gray-600);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Loading & Empty states */
+        .loading, .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-600);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📱 Auction Control Panel</h1>
+        <p>Update bids in real-time</p>
+    </div>
+
+    <div id="app">
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading auction data...</p>
+        </div>
+    </div>
+
+    <!-- Edit Bid Modal -->
+    <div id="editModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Update Bid</h2>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div id="editForm"></div>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="addModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Item</h2>
+                <button class="close-btn" onclick="closeAddModal()">&times;</button>
+            </div>
+            <form id="addItemForm">
+                <div class="form-group">
+                    <label for="newItemName">Item Name *</label>
+                    <input type="text" id="newItemName" required placeholder="Weekend Getaway Package">
+                </div>
+                <div class="form-group">
+                    <label for="newItemDesc">Description</label>
+                    <input type="text" id="newItemDesc" placeholder="2 nights at Grand Resort">
+                </div>
+                <div class="form-group">
+                    <label for="newStartingBid">Starting Bid ($)</label>
+                    <input type="number" id="newStartingBid" placeholder="100" step="1" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="newCurrentBid">Current Bid ($)</label>
+                    <input type="number" id="newCurrentBid" placeholder="150" step="1" min="0">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-danger" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <button class="btn-add" onclick="openAddModal()">+</button>
+
+    <script>
+        // Get display ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const displayId = urlParams.get('id');
+
+        let currentData = null;
+        let pollInterval = null;
+
+        // Initialize
+        function init() {
+            if (!displayId) {
+                showError('No display ID provided');
+                return;
+            }
+
+            loadDisplay();
+            // Poll for updates every 2 seconds
+            pollInterval = setInterval(loadDisplay, 2000);
+        }
+
+        // Load display data
+        function loadDisplay() {
+            try {
+                const data = localStorage.getItem(`bidscreen_display_${displayId}`);
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    currentData = parsed;
+                    renderControl(currentData);
+                } else {
+                    showError('Display not found');
+                }
+            } catch (e) {
+                console.error('Error loading display:', e);
+                showError('Error loading display');
+            }
+        }
+
+        // Render control panel
+        function renderControl(data) {
+            const totalRaised = data.items.reduce((sum, item) => sum + (item.currentBid || 0), 0);
+            const itemCount = data.items.length;
+
+            document.getElementById('app').innerHTML = `
+                <div class="event-info">
+                    <h2>${escapeHtml(data.event?.name || 'Auction')}</h2>
+                    ${data.event?.subtitle ? `<p>${escapeHtml(data.event.subtitle)}</p>` : ''}
+                    <div class="stats">
+                        <div class="stat">
+                            <span class="stat-value">$${totalRaised.toLocaleString()}</span>
+                            <span class="stat-label">Total Raised</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">${itemCount}</span>
+                            <span class="stat-label">Items</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="items-section">
+                    <div class="section-header">
+                        <h3>Auction Items</h3>
+                        <span class="item-count">${itemCount}</span>
+                    </div>
+                    <div class="items-list">
+                        ${data.items.map((item, index) => `
+                            <div class="item">
+                                <div class="item-header">
+                                    <div class="item-rank">#${index + 1}</div>
+                                    <div class="item-info">
+                                        <div class="item-name">${escapeHtml(item.name)}</div>
+                                        <div class="item-description">${escapeHtml(item.description) || 'No description'}</div>
+                                    </div>
+                                    <div class="item-bid-info">
+                                        <div class="current-bid">$${(item.currentBid || 0).toLocaleString()}</div>
+                                        <div class="starting-bid">Start: $${(item.startingBid || 0).toLocaleString()}</div>
+                                    </div>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="btn btn-primary" onclick="editBid(${item.id})">✏️ Update Bid</button>
+                                    <button class="btn btn-danger" onclick="deleteItem(${item.id})">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Edit bid
+        function editBid(itemId) {
+            const item = currentData.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            const modal = document.getElementById('editModal');
+            const form = document.getElementById('editForm');
+
+            form.innerHTML = `
+                <div class="form-group">
+                    <label>Item</label>
+                    <input type="text" value="${escapeHtml(item.name)}" readonly style="background: var(--gray-100);">
+                </div>
+                <div class="form-group">
+                    <label for="bidAmount">New Bid Amount ($)</label>
+                    <input type="number" id="bidAmount" value="${item.currentBid}" step="1" min="0" autofocus>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-danger" onclick="closeEditModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveBid(${itemId})">Save Bid</button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => document.getElementById('bidAmount').focus(), 100);
+        }
+
+        // Save bid
+        function saveBid(itemId) {
+            const newBid = parseFloat(document.getElementById('bidAmount').value);
+
+            if (isNaN(newBid) || newBid < 0) {
+                alert('Please enter a valid bid amount');
+                return;
+            }
+
+            const item = currentData.items.find(i => i.id === itemId);
+            if (item) {
+                item.currentBid = newBid;
+                // Re-sort items by current bid
+                currentData.items.sort((a, b) => b.currentBid - a.currentBid);
+                currentData.updatedAt = new Date().toISOString();
+                saveDisplay();
+                closeEditModal();
+            }
+        }
+
+        // Delete item
+        function deleteItem(itemId) {
+            const item = currentData.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            if (!confirm(`Delete "${item.name}"?`)) return;
+
+            currentData.items = currentData.items.filter(i => i.id !== itemId);
+            currentData.updatedAt = new Date().toISOString();
+            saveDisplay();
+        }
+
+        // Add item modal
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+            document.getElementById('newItemName').focus();
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('addItemForm').reset();
+        }
+
+        // Add item form submit
+        document.getElementById('addItemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('newItemName').value.trim();
+            const description = document.getElementById('newItemDesc').value.trim();
+            const startingBid = parseFloat(document.getElementById('newStartingBid').value) || 0;
+            const currentBid = parseFloat(document.getElementById('newCurrentBid').value) || startingBid;
+
+            if (!name) {
+                alert('Please enter an item name');
+                return;
+            }
+
+            const newItem = {
+                id: Date.now(),
+                name,
+                description,
+                startingBid,
+                currentBid,
+                createdAt: new Date().toISOString()
+            };
+
+            currentData.items.push(newItem);
+            currentData.items.sort((a, b) => b.currentBid - a.currentBid);
+            currentData.updatedAt = new Date().toISOString();
+            saveDisplay();
+            closeAddModal();
+        });
+
+        // Close modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        // Save display
+        function saveDisplay() {
+            localStorage.setItem(`bidscreen_display_${displayId}`, JSON.stringify(currentData));
+            renderControl(currentData);
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('app').innerHTML = `
+                <div class="empty">
+                    <h2>⚠️ ${message}</h2>
+                    <p style="margin-top: 16px;">
+                        <a href="/" style="color: var(--primary); text-decoration: none; font-weight: 600;">← Go back home</a>
+                    </p>
+                </div>
+            `;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Start
+        init();
+
+        // Close modals on backdrop click
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+
+        document.getElementById('addModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddModal();
+        });
+
+        // Pause polling when page is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                clearInterval(pollInterval);
+            } else {
+                loadDisplay();
+                pollInterval = setInterval(loadDisplay, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
