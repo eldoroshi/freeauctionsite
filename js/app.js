@@ -138,55 +138,78 @@ function previewDisplay() {
 }
 
 // Launch Display
-function launchDisplay() {
+async function launchDisplay() {
     if (auctionItems.length === 0) {
         alert('Add at least one item before launching');
         return;
     }
 
-    // Generate unique ID for this display
-    const displayId = generateDisplayId();
-    const displayData = getDisplayData();
+    try {
+        // Generate unique ID for this display
+        const displayId = generateDisplayId();
+        const displayData = getDisplayData();
 
-    // Save to localStorage with display ID
-    localStorage.setItem(`bidscreen_display_${displayId}`, JSON.stringify(displayData));
+        // Initialize storage adapter
+        await storage.initialize();
 
-    // Create display URL
-    const displayUrl = `${window.location.origin}/display.html?id=${displayId}`;
-    const controlUrl = `${window.location.origin}/control.html?id=${displayId}`;
+        // Check if premium and apply branding
+        const isPremium = await SupabaseClient.isPremium();
+        if (isPremium) {
+            // Check if user wants to remove watermark
+            const hasWatermarkAccess = await SupabaseClient.hasFeatureAccess('hide_watermark');
+            if (hasWatermarkAccess) {
+                displayData.event.hideWatermark = true;
+            }
+        }
 
-    // Show modal with links
-    const modal = document.createElement('div');
-    modal.innerHTML = `
-        <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px;">
-            <div style="background: white; border-radius: 16px; padding: 40px; max-width: 500px; width: 100%;">
-                <h2 style="margin-bottom: 8px;">🎉 Display Created!</h2>
-                <p style="color: #64748b; margin-bottom: 32px;">Share these links to control and display your auction.</p>
-                
-                <div style="margin-bottom: 24px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">📺 Display Link (for TV/projector)</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" value="${displayUrl}" readonly style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                        <button onclick="copyToClipboard('${displayUrl}')" style="padding: 12px 16px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer;">Copy</button>
+        // Save event using storage adapter
+        await storage.saveEvent(displayId, displayData);
+
+        // Create display URL
+        const displayUrl = `${window.location.origin}/display.html?id=${displayId}`;
+        const controlUrl = `${window.location.origin}/control.html?id=${displayId}`;
+
+        // Show modal with links
+        const modal = document.createElement('div');
+        modal.innerHTML = `
+            <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px;">
+                <div style="background: white; border-radius: 16px; padding: 40px; max-width: 500px; width: 100%;">
+                    <h2 style="margin-bottom: 8px;">🎉 Display Created!</h2>
+                    <p style="color: #64748b; margin-bottom: 32px;">
+                        ${isPremium
+                            ? '✨ Your premium display has been created with real-time sync!'
+                            : 'Share these links to control and display your auction.'}
+                    </p>
+
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">📺 Display Link (for TV/projector)</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" value="${displayUrl}" readonly style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                            <button onclick="copyToClipboard('${displayUrl}')" style="padding: 12px 16px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer;">Copy</button>
+                        </div>
                     </div>
-                </div>
-                
-                <div style="margin-bottom: 32px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">📱 Control Link (for your phone)</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" value="${controlUrl}" readonly style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                        <button onclick="copyToClipboard('${controlUrl}')" style="padding: 12px 16px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer;">Copy</button>
+
+                    <div style="margin-bottom: 32px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">📱 Control Link (for your phone)</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" value="${controlUrl}" readonly style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                            <button onclick="copyToClipboard('${controlUrl}')" style="padding: 12px 16px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer;">Copy</button>
+                        </div>
+                        ${!isPremium ? '<p style="color: #f59e0b; font-size: 0.875rem; margin-top: 8px;">⚠️ Free plan: Control panel must be on the same device as display</p>' : ''}
                     </div>
-                </div>
-                
-                <div style="display: flex; gap: 12px;">
-                    <button onclick="window.open('${displayUrl}', '_blank')" style="flex: 1; padding: 16px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Open Display</button>
-                    <button onclick="this.closest('div').parentElement.parentElement.remove()" style="flex: 1; padding: 16px; background: #f1f5f9; color: #1e293b; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Close</button>
+
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="window.open('${displayUrl}', '_blank')" style="flex: 1; padding: 16px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Open Display</button>
+                        <button onclick="this.closest('div').parentElement.parentElement.remove()" style="flex: 1; padding: 16px; background: #f1f5f9; color: #1e293b; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Close</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+        `;
+        document.body.appendChild(modal);
+    } catch (error) {
+        console.error('Error launching display:', error);
+        alert('Error creating display. Please try again.');
+    }
 }
 
 // Get Display Data
@@ -332,7 +355,7 @@ function generateDisplayHTML(data) {
     
     <div class="footer">
         <div class="total">Total Raised: <strong>$${totalRaised.toLocaleString()}</strong></div>
-        <div class="powered">Powered by FreeAuctionSite.io</div>
+        ${!data.event?.hideWatermark ? '<div class="powered">Powered by FreeAuctionSite.io</div>' : ''}
     </div>
 </body>
 </html>

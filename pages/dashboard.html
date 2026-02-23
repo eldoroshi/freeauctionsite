@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | FreeAuctionSite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2rem;
+            color: #1e293b;
+        }
+
+        .subscription-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .subscription-badge.free {
+            background: #94a3b8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .events-section {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .events-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .events-header h2 {
+            font-size: 1.5rem;
+            color: #1e293b;
+        }
+
+        .event-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: box-shadow 0.2s;
+        }
+
+        .event-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .event-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .event-card p {
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            color: #64748b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .upgrade-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upgrade-banner h3 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .upgrade-banner p {
+            opacity: 0.9;
+        }
+
+        .upgrade-banner button {
+            background: white;
+            color: #667eea;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <p>Loading dashboard...</p>
+        </div>
+
+        <div id="dashboardContent" style="display: none;">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p id="userEmail" style="color: #64748b; margin-top: 8px;"></p>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <span id="subscriptionBadge" class="subscription-badge"></span>
+                    <button onclick="window.location.href='../index.html'" class="btn btn-secondary">Back to Home</button>
+                </div>
+            </div>
+
+            <div id="upgradeBanner"></div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Events</h3>
+                    <div class="value" id="totalEvents">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Events</h3>
+                    <div class="value" id="activeEvents">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Subscription</h3>
+                    <div class="value" id="subscriptionTier" style="font-size: 1.5rem;">Free</div>
+                </div>
+            </div>
+
+            <div class="events-section">
+                <div class="events-header">
+                    <h2>Your Events</h2>
+                    <a href="../index.html#tool" class="btn btn-primary">+ Create New Event</a>
+                </div>
+                <div id="eventsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../config/env.js"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/storage-adapter.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/stripe-checkout.js"></script>
+    <script>
+        async function loadDashboard() {
+            try {
+                // Check if user is logged in
+                const user = await auth.getCurrentUser();
+
+                if (!user) {
+                    window.location.href = 'login.html?redirect=dashboard';
+                    return;
+                }
+
+                // Get user profile
+                const profile = await auth.getProfile();
+
+                // Update UI with user info
+                document.getElementById('userEmail').textContent = user.email;
+
+                const subscriptionTier = profile?.subscription_tier || 'free';
+                const subscriptionBadge = document.getElementById('subscriptionBadge');
+                const subscriptionTierEl = document.getElementById('subscriptionTier');
+
+                if (subscriptionTier === 'free') {
+                    subscriptionBadge.textContent = 'Free Plan';
+                    subscriptionBadge.classList.add('free');
+                    subscriptionTierEl.textContent = 'Free';
+
+                    // Show upgrade banner
+                    document.getElementById('upgradeBanner').innerHTML = `
+                        <div class="upgrade-banner">
+                            <div>
+                                <h3>🚀 Upgrade to Pro</h3>
+                                <p>Get remote control, unlimited items, and custom branding for just $9/month</p>
+                            </div>
+                            <button onclick="window.location.href='../index.html#pricing'">Upgrade Now</button>
+                        </div>
+                    `;
+                } else if (subscriptionTier === 'pro') {
+                    subscriptionBadge.textContent = '⭐ Pro Plan';
+                    subscriptionTierEl.textContent = 'Pro';
+
+                    // Show manage subscription option
+                    document.getElementById('upgradeBanner').innerHTML = `
+                        <div class="upgrade-banner" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <div>
+                                <h3>✓ Pro Member</h3>
+                                <p>You have access to all premium features. Thank you for your support!</p>
+                            </div>
+                            <button onclick="stripeCheckout.openCustomerPortal()">Manage Subscription</button>
+                        </div>
+                    `;
+                } else if (subscriptionTier === 'event') {
+                    subscriptionBadge.textContent = '🎫 Event Plan';
+                    subscriptionTierEl.textContent = 'Event';
+
+                    const expiresAt = profile?.subscription_expires_at;
+                    const daysLeft = expiresAt ? Math.ceil((new Date(expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+
+                    document.getElementById('upgradeBanner').innerHTML = `
+                        <div class="upgrade-banner" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                            <div>
+                                <h3>✓ Event Plan Active</h3>
+                                <p>${daysLeft > 0 ? `${daysLeft} days remaining` : 'Expires soon'} • Valid for 30 days from purchase</p>
+                            </div>
+                            <button onclick="window.location.href='../index.html#pricing'">Renew Plan</button>
+                        </div>
+                    `;
+                }
+
+                // Load events
+                await loadEvents();
+
+                // Show dashboard
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('loadingState').innerHTML = `
+                    <div style="text-align: center; padding: 60px;">
+                        <h2 style="color: #ef4444; margin-bottom: 16px;">Error Loading Dashboard</h2>
+                        <p style="color: #64748b; margin-bottom: 24px;">${error.message}</p>
+                        <button onclick="window.location.reload()" class="btn btn-primary">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadEvents() {
+            try {
+                const events = await storage.getAllEvents();
+
+                document.getElementById('totalEvents').textContent = events.length;
+                document.getElementById('activeEvents').textContent = events.filter(e => e.status === 'active').length;
+
+                const eventsList = document.getElementById('eventsList');
+
+                if (events.length === 0) {
+                    eventsList.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No events yet</h3>
+                            <p>Create your first auction display to get started!</p>
+                            <a href="../index.html#tool" class="btn btn-primary" style="display: inline-block; margin-top: 24px;">Create Event</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                eventsList.innerHTML = events.map(event => `
+                    <div class="event-card">
+                        <h3>${escapeHtml(event.event?.name || event.name || 'Untitled Event')}</h3>
+                        <p>${escapeHtml(event.event?.subtitle || event.subtitle || '')}</p>
+                        <div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 16px;">
+                            ${event.items?.length || 0} items • Updated ${formatDate(event.updatedAt || event.updated_at)}
+                        </div>
+                        <div class="event-actions">
+                            <a href="../display.html?id=${event.id}" target="_blank" class="btn btn-primary">Open Display</a>
+                            <a href="../control.html?id=${event.id}" class="btn btn-secondary">Control Panel</a>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading events:', error);
+                document.getElementById('eventsList').innerHTML = `
+                    <div class="empty-state">
+                        <h3>Error loading events</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'recently';
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+    </script>
+</body>
+</html>

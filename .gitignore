@@ -1,0 +1,27 @@
+# Environment files with secrets
+config/env.production.js
+config/env.local.js
+.env
+.env.local
+.env.production
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

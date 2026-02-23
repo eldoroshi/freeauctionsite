@@ -11,6 +11,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- Supabase for Backend -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+    <!-- Stripe for Payments -->
+    <script src="https://js.stripe.com/v3/"></script>
+
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -41,7 +48,9 @@
                 <a href="#pricing">Pricing</a>
                 <a href="#faq">FAQ</a>
             </div>
-            <a href="#tool" class="btn btn-primary">Create Display Free</a>
+            <div id="authButtons" style="display: flex; gap: 12px; align-items: center;">
+                <a href="#tool" class="btn btn-primary">Create Display Free</a>
+            </div>
         </div>
     </nav>
 
@@ -305,8 +314,10 @@
                         <li>✓ Shareable display link</li>
                         <li>✓ Works on any screen</li>
                         <li>✓ No signup required</li>
+                        <li class="muted">✗ Control only on same device</li>
                         <li class="muted">✗ FreeAuctionSite watermark</li>
                         <li class="muted">✗ Custom branding</li>
+                        <li class="muted">✗ Silent bidding mode</li>
                     </ul>
                     <a href="#tool" class="btn btn-secondary">Get Started Free</a>
                 </div>
@@ -320,14 +331,16 @@
                     </div>
                     <ul class="pricing-features">
                         <li>✓ Unlimited auction items</li>
-                        <li>✓ Real-time bid updates</li>
+                        <li>✓ <strong>Remote control from any device</strong></li>
+                        <li>✓ <strong>Silent bidding mode</strong></li>
+                        <li>✓ Real-time sync across devices</li>
                         <li>✓ Multiple display modes</li>
                         <li>✓ Custom colors & branding</li>
                         <li>✓ Remove FreeAuctionSite watermark</li>
                         <li>✓ Priority support</li>
                         <li>✓ Analytics dashboard</li>
                     </ul>
-                    <a href="#" class="btn btn-primary">Start Pro Trial</a>
+                    <button onclick="handleProSubscribe()" class="btn btn-primary">Start Pro Trial</button>
                 </div>
 
                 <div class="pricing-card">
@@ -338,6 +351,8 @@
                     </div>
                     <ul class="pricing-features">
                         <li>✓ Unlimited items for 1 event</li>
+                        <li>✓ <strong>Remote control from any device</strong></li>
+                        <li>✓ <strong>Silent bidding mode</strong></li>
                         <li>✓ All Pro features</li>
                         <li>✓ Valid for 30 days</li>
                         <li>✓ Custom branding</li>
@@ -345,7 +360,7 @@
                         <li>✓ Export bid history</li>
                         <li>✓ Email support</li>
                     </ul>
-                    <a href="#" class="btn btn-secondary">Buy Event Pass</a>
+                    <button onclick="handleEventPurchase()" class="btn btn-secondary">Buy Event Pass</button>
                 </div>
             </div>
         </div>
@@ -396,7 +411,7 @@
                 </div>
                 <div class="faq-item">
                     <h3>Can I update bids from my phone?</h3>
-                    <p>Yes! You get a separate "controller" link that works on any phone or tablet. Update bids in real-time while the display shows on your big screen.</p>
+                    <p>Yes! You get a separate control panel link. <strong>Free accounts:</strong> Control panel must be opened on the same device as the display (uses local storage). <strong>Pro/Event accounts:</strong> Control from any device with real-time sync across all screens.</p>
                 </div>
                 <div class="faq-item">
                     <h3>Does it handle payments or bidding?</h3>
@@ -409,6 +424,10 @@
                 <div class="faq-item">
                     <h3>Can I customize the colors to match our event?</h3>
                     <p>Free accounts get our default theme. Pro and Event accounts can customize colors, add logos, and match your event branding.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>What is silent bidding mode?</h3>
+                    <p>Silent bidding mode (Pro/Event plans) allows bidders to place bids privately through their phones without displaying them on the screen. Perfect for creating excitement when you reveal the final bids at the end of your event.</p>
                 </div>
             </div>
         </div>
@@ -437,29 +456,29 @@
                 <div class="footer-links">
                     <h4>Use Cases</h4>
                     <ul>
-                        <li><a href="/school-auction-display">School Auctions</a></li>
-                        <li><a href="/nonprofit-auction-display">Nonprofit Events</a></li>
-                        <li><a href="/church-auction-display">Church Fundraisers</a></li>
-                        <li><a href="/gala-auction-display">Gala Events</a></li>
-                        <li><a href="/silent-auction-display">Silent Auctions</a></li>
+                        <li><a href="pages/school-auction-display.html">School Auctions</a></li>
+                        <li><a href="pages/nonprofit-auction-display.html">Nonprofit Events</a></li>
+                        <li><a href="pages/church-auction-display.html">Church Fundraisers</a></li>
+                        <li><a href="pages/gala-auction-display.html">Gala Events</a></li>
+                        <li><a href="pages/silent-auction-display.html">Silent Auctions</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
                     <h4>Resources</h4>
                     <ul>
-                        <li><a href="/blog/how-to-display-auction-items-on-tv">Setup Guide</a></li>
-                        <li><a href="/templates/silent-auction-bid-sheet">Templates</a></li>
-                        <li><a href="/alternatives/givebutter-alternative">Alternatives</a></li>
+                        <li><a href="#tool">Get Started</a></li>
+                        <li><a href="#demo">See Demo</a></li>
+                        <li><a href="pages/alternatives/givebutter-alternative.html">Alternatives</a></li>
                         <li><a href="#faq">FAQ</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
-                    <h4>Company</h4>
+                    <h4>Account</h4>
                     <ul>
-                        <li><a href="/about">About</a></li>
-                        <li><a href="/contact">Contact</a></li>
-                        <li><a href="/privacy">Privacy Policy</a></li>
-                        <li><a href="/terms">Terms of Service</a></li>
+                        <li><a href="pages/login.html">Sign In</a></li>
+                        <li><a href="pages/signup.html">Sign Up</a></li>
+                        <li><a href="pages/dashboard.html">Dashboard</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
                     </ul>
                 </div>
             </div>
@@ -469,6 +488,147 @@
         </div>
     </footer>
 
+    <!-- Premium Feature Modules -->
+    <script src="config/env.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/storage-adapter.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/branding.js"></script>
+    <script src="js/sync-manager.js"></script>
+    <script src="js/stripe-checkout.js"></script>
+
+    <!-- Main App -->
     <script src="js/app.js"></script>
+
+    <!-- Auth UI Handler -->
+    <script>
+        // Initialize premium features on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Supabase
+            if (ENV_CONFIG.PREMIUM_FEATURES_ENABLED) {
+                SupabaseClient.init();
+            }
+
+            // Update auth UI
+            updateAuthUI();
+
+            // Listen for auth changes
+            window.addEventListener('authStateChange', updateAuthUI);
+        });
+
+        async function updateAuthUI() {
+            const authButtons = document.getElementById('authButtons');
+            if (!authButtons) return;
+
+            try {
+                const user = await auth.getCurrentUser();
+
+                if (user) {
+                    // User is logged in
+                    const profile = await auth.getProfile();
+                    const isPremium = profile && ['pro', 'event'].includes(profile.subscription_tier);
+
+                    authButtons.innerHTML = `
+                        <span style="color: #64748b; font-size: 0.875rem; display: flex; align-items: center; gap: 8px;">
+                            ${isPremium ? '<span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">PRO</span>' : ''}
+                            <span>${user.email}</span>
+                        </span>
+                        <a href="pages/dashboard.html" style="color: #6366f1; text-decoration: none; font-weight: 600;">Dashboard</a>
+                        <button onclick="handleSignOut()" style="background: #f1f5f9; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">Sign Out</button>
+                    `;
+                } else {
+                    // User is not logged in
+                    authButtons.innerHTML = `
+                        <a href="pages/login.html" style="color: #6366f1; text-decoration: none; font-weight: 600;">Sign In</a>
+                        <a href="pages/signup.html" class="btn btn-primary">Sign Up Free</a>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error updating auth UI:', error);
+                // Show default UI on error
+                authButtons.innerHTML = `
+                    <a href="pages/login.html" style="color: #6366f1; text-decoration: none; font-weight: 600;">Sign In</a>
+                    <a href="pages/signup.html" class="btn btn-primary">Sign Up Free</a>
+                `;
+            }
+        }
+
+        async function handleSignOut() {
+            const result = await auth.signOut();
+            if (result.success) {
+                updateAuthUI();
+                alert('Signed out successfully');
+            }
+        }
+
+        async function handleProSubscribe() {
+            const user = await auth.getCurrentUser();
+
+            if (!user) {
+                // Not logged in - redirect to signup
+                if (confirm('You need to sign up first. Create a free account now?')) {
+                    window.location.href = 'pages/signup.html?redirect=pricing&plan=pro';
+                }
+                return;
+            }
+
+            // Check if already premium
+            const profile = await auth.getProfile();
+            if (profile && ['pro', 'event'].includes(profile.subscription_tier)) {
+                alert('You already have a premium subscription! Go to Dashboard to manage it.');
+                return;
+            }
+
+            // Start checkout
+            await stripeCheckout.subscribeProPlan();
+        }
+
+        async function handleEventPurchase() {
+            const user = await auth.getCurrentUser();
+
+            if (!user) {
+                // Not logged in - redirect to signup
+                if (confirm('You need to sign up first. Create a free account now?')) {
+                    window.location.href = 'pages/signup.html?redirect=pricing&plan=event';
+                }
+                return;
+            }
+
+            // Check if already premium
+            const profile = await auth.getProfile();
+            if (profile && ['pro', 'event'].includes(profile.subscription_tier)) {
+                alert('You already have a premium subscription! Go to Dashboard to manage it.');
+                return;
+            }
+
+            // Start checkout
+            await stripeCheckout.purchaseEventPlan();
+        }
+
+        // Show upgrade prompt for premium features
+        function showUpgradePrompt(featureName) {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 16px; padding: 40px; max-width: 500px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">🔒</div>
+                    <h2 style="margin-bottom: 16px;">Premium Feature</h2>
+                    <p style="color: #64748b; margin-bottom: 32px;">
+                        ${featureName} is available on Pro and Event plans. Upgrade to unlock this feature and many more!
+                    </p>
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button onclick="this.closest('div').parentElement.remove()" style="padding: 12px 24px; background: #f1f5f9; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Maybe Later</button>
+                        <button onclick="window.location.href='#pricing'; this.closest('div').parentElement.remove();" style="padding: 12px 24px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">View Pricing</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+    </script>
 </body>
 </html>

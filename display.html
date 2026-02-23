@@ -262,34 +262,90 @@
         Press F11 for fullscreen mode
     </div>
 
+    <!-- Premium Feature Modules -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="config/env.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/storage-adapter.js"></script>
+    <script src="js/branding.js"></script>
+    <script src="js/sync-manager.js"></script>
+
     <script>
         // Get display ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const displayId = urlParams.get('id');
-        
+
         let currentData = null;
         let pollInterval = null;
-        
+        let syncManager = null;
+
         // Initialize
-        function init() {
+        async function init() {
             if (!displayId) {
                 showDemo();
                 return;
             }
-            
-            loadDisplay();
-            // Poll for updates every 3 seconds
-            pollInterval = setInterval(loadDisplay, 3000);
-        }
-        
-        // Load display data
-        function loadDisplay() {
+
             try {
-                const data = localStorage.getItem(`bidscreen_display_${displayId}`);
+                // Initialize storage adapter
+                await storage.initialize();
+
+                // Load initial data
+                const data = await storage.loadEvent(displayId);
+
+                if (!data) {
+                    showEmpty();
+                    return;
+                }
+
+                currentData = data;
+                renderDisplay(currentData);
+
+                // Apply custom branding if available
+                if (data.event?.branding) {
+                    const brandingManager = new BrandingManager(data);
+                    brandingManager.apply();
+                }
+
+                // Use real-time sync for premium users, polling for free users
+                if (storage.getMode() === 'supabase') {
+                    console.log('Premium mode: Using real-time sync');
+
+                    // Initialize real-time sync
+                    syncManager = new SyncManager(displayId);
+                    syncManager.subscribe((updatedData) => {
+                        console.log('Real-time update received');
+                        currentData = updatedData;
+                        renderDisplay(currentData);
+
+                        // Apply branding updates
+                        if (updatedData.event?.branding) {
+                            const brandingManager = new BrandingManager(updatedData);
+                            brandingManager.apply();
+                        }
+                    });
+
+                    // Show connection indicator
+                    showConnectionIndicator();
+                } else {
+                    console.log('Free mode: Using localStorage polling');
+
+                    // Free tier: Use polling (existing behavior)
+                    pollInterval = setInterval(loadDisplay, 3000);
+                }
+            } catch (error) {
+                console.error('Error initializing display:', error);
+                showEmpty();
+            }
+        }
+
+        // Load display data (for polling mode)
+        async function loadDisplay() {
+            try {
+                const data = await storage.loadEvent(displayId);
                 if (data) {
-                    const parsed = JSON.parse(data);
-                    if (JSON.stringify(parsed) !== JSON.stringify(currentData)) {
-                        currentData = parsed;
+                    if (JSON.stringify(data) !== JSON.stringify(currentData)) {
+                        currentData = data;
                         renderDisplay(currentData);
                     }
                 } else {
@@ -299,6 +355,51 @@
                 console.error('Error loading display:', e);
                 showEmpty();
             }
+        }
+
+        // Show connection indicator for real-time mode
+        function showConnectionIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'connectionIndicator';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-size: 0.875rem;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            indicator.innerHTML = '<span style="width: 8px; height: 8px; background: white; border-radius: 50%; animation: pulse 2s infinite;"></span> Live';
+
+            // Add pulse animation
+            const style = document.createElement('style');
+            style.textContent = '@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }';
+            document.head.appendChild(style);
+
+            document.body.appendChild(indicator);
+
+            // Listen for connection status changes
+            window.addEventListener('syncStatusChange', (e) => {
+                const status = e.detail.status;
+                if (status === 'connected') {
+                    indicator.style.background = '#10b981';
+                    indicator.innerHTML = '<span style="width: 8px; height: 8px; background: white; border-radius: 50%; animation: pulse 2s infinite;"></span> Live';
+                } else if (status === 'disconnected') {
+                    indicator.style.background = '#f59e0b';
+                    indicator.innerHTML = '<span style="width: 8px; height: 8px; background: white; border-radius: 50%;"></span> Reconnecting...';
+                } else if (status === 'failed') {
+                    indicator.style.background = '#ef4444';
+                    indicator.innerHTML = '<span style="width: 8px; height: 8px; background: white; border-radius: 50%;"></span> Offline';
+                }
+            });
         }
         
         // Render display
@@ -334,7 +435,7 @@
                         <span>${itemCount} Items</span>
                         <span>Updated: ${new Date().toLocaleTimeString()}</span>
                     </div>
-                    <div class="powered">Powered by <a href="https://freeauctionsite.com">FreeAuctionSite.io</a></div>
+                    ${!data.event?.hideWatermark ? '<div class="powered">Powered by <a href="https://freeauctionsite.com">FreeAuctionSite.io</a></div>' : ''}
                 </div>
             `;
         }
@@ -393,11 +494,22 @@
         // Handle visibility change (pause polling when hidden)
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                clearInterval(pollInterval);
+                if (pollInterval) clearInterval(pollInterval);
             } else {
-                loadDisplay();
-                pollInterval = setInterval(loadDisplay, 3000);
+                if (storage.getMode() === 'localStorage') {
+                    loadDisplay();
+                    pollInterval = setInterval(loadDisplay, 3000);
+                } else if (syncManager) {
+                    // Refresh real-time connection
+                    syncManager.refresh();
+                }
             }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (pollInterval) clearInterval(pollInterval);
+            if (syncManager) syncManager.unsubscribe();
         });
     </script>
 </body>

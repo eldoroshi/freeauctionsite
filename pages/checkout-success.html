@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful | FreeAuctionSite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 24px;
+            padding: 60px 48px;
+            max-width: 560px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: 24px;
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            color: #1e293b;
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: #64748b;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .feature-list {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .feature-list h3 {
+            font-size: 1rem;
+            color: #1e293b;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .feature-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: #475569;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 1.25rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 16px 32px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #4f46e5;
+        }
+
+        .btn-secondary {
+            background: #10b981;
+            margin-left: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: #059669;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .support-text {
+            margin-top: 32px;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .support-text a {
+            color: #6366f1;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <p>Verifying your payment...</p>
+        </div>
+
+        <div id="successState" style="display: none;">
+            <div class="success-icon">🎉</div>
+            <h1>Welcome to Premium!</h1>
+            <p class="subtitle">
+                Your payment was successful. You now have access to all premium features!
+            </p>
+
+            <div class="feature-list">
+                <h3>What's included:</h3>
+                <ul id="featureList">
+                    <!-- Features will be populated based on plan -->
+                </ul>
+            </div>
+
+            <div>
+                <a href="../index.html#tool" class="btn">Create Your Display</a>
+                <a href="dashboard.html" class="btn btn-secondary">View Dashboard</a>
+            </div>
+
+            <p class="support-text">
+                Need help? <a href="mailto:support@freeauctionsite.com">Contact support</a>
+            </p>
+        </div>
+
+        <div id="errorState" style="display: none;">
+            <div style="font-size: 4rem; margin-bottom: 24px;">⚠️</div>
+            <h1 style="color: #ef4444;">Payment Issue</h1>
+            <p class="subtitle" id="errorMessage">
+                We couldn't verify your payment. Please contact support.
+            </p>
+            <a href="../index.html" class="btn">Back to Home</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="../config/env.js"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/stripe-checkout.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+
+        const featuresByPlan = {
+            pro: [
+                'Unlimited auction items',
+                'Remote control from any device',
+                'Real-time sync across devices',
+                'Silent bidding mode',
+                'Custom colors & branding',
+                'Remove watermark',
+                'Priority support',
+                'Analytics dashboard'
+            ],
+            event: [
+                'Unlimited items for 1 event',
+                'Remote control from any device',
+                'Real-time sync across devices',
+                'Silent bidding mode',
+                'All Pro features',
+                'Valid for 30 days',
+                'Custom branding',
+                'No watermark',
+                'Export bid history'
+            ]
+        };
+
+        async function verifyPayment() {
+            if (!sessionId) {
+                showError('No payment session found');
+                return;
+            }
+
+            try {
+                const result = await stripeCheckout.verifyCheckoutSession(sessionId);
+
+                if (result.success) {
+                    // Show success state
+                    const plan = result.data?.plan || 'pro';
+                    showSuccess(plan);
+
+                    // Track conversion
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'purchase', {
+                            value: plan === 'pro' ? 9 : 29,
+                            currency: 'USD',
+                            transaction_id: sessionId
+                        });
+                    }
+                } else {
+                    showError(result.error || 'Payment verification failed');
+                }
+            } catch (error) {
+                console.error('Error verifying payment:', error);
+                showError('Unable to verify payment. Please contact support.');
+            }
+        }
+
+        function showSuccess(plan) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('successState').style.display = 'block';
+
+            // Populate features based on plan
+            const features = featuresByPlan[plan] || featuresByPlan.pro;
+            const featureList = document.getElementById('featureList');
+            featureList.innerHTML = features.map(feature => `<li>${feature}</li>`).join('');
+        }
+
+        function showError(message) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        // Verify payment on load
+        verifyPayment();
+    </script>
+</body>
+</html>
