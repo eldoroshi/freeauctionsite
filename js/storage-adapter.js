@@ -6,6 +6,103 @@ class StorageAdapter {
     constructor() {
         this.mode = 'localStorage'; // Default mode
         this.isInitialized = false;
+        this.offlineQueue = [];
+        this.isOnline = navigator.onLine;
+        this._setupOfflineHandlers();
+    }
+
+    // Setup online/offline event handlers
+    _setupOfflineHandlers() {
+        window.addEventListener('online', () => {
+            console.log('Connection restored - syncing offline queue');
+            this.isOnline = true;
+            this._showConnectionStatus('online');
+            this._syncOfflineQueue();
+        });
+
+        window.addEventListener('offline', () => {
+            console.log('Connection lost - entering offline mode');
+            this.isOnline = false;
+            this._showConnectionStatus('offline');
+        });
+    }
+
+    // Show connection status notification
+    _showConnectionStatus(status) {
+        // Remove existing notification
+        const existing = document.getElementById('offlineNotification');
+        if (existing) existing.remove();
+
+        const notification = document.createElement('div');
+        notification.id = 'offlineNotification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${status === 'online' ? '#10b981' : '#f59e0b'};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideDown 0.3s ease-out;
+        `;
+
+        notification.textContent = status === 'online'
+            ? '✓ Back online - Changes synced'
+            : '⚠️ Offline - Changes will sync when reconnected';
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideDown {
+                from { transform: translate(-50%, -100%); opacity: 0; }
+                to { transform: translate(-50%, 0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        document.body.appendChild(notification);
+
+        // Auto-hide after 3 seconds for online, keep for offline
+        if (status === 'online') {
+            setTimeout(() => {
+                notification.style.animation = 'slideDown 0.3s ease-out reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    }
+
+    // Sync offline queue
+    async _syncOfflineQueue() {
+        if (this.offlineQueue.length === 0) return;
+
+        console.log(`Syncing ${this.offlineQueue.length} offline changes...`);
+
+        const queue = [...this.offlineQueue];
+        this.offlineQueue = [];
+
+        for (const change of queue) {
+            try {
+                if (change.action === 'save') {
+                    await this._saveToSupabase(change.displayId, change.data);
+                } else if (change.action === 'delete') {
+                    await this._deleteFromSupabase(change.displayId);
+                }
+            } catch (error) {
+                console.error('Error syncing offline change:', error);
+                // Re-add to queue if sync fails
+                this.offlineQueue.push(change);
+            }
+        }
+
+        if (this.offlineQueue.length === 0) {
+            console.log('All offline changes synced successfully');
+        } else {
+            console.log(`${this.offlineQueue.length} changes failed to sync - will retry`);
+        }
     }
 
     // Initialize the adapter and determine storage mode
@@ -100,6 +197,20 @@ class StorageAdapter {
 
     // Supabase implementation
     async _saveToSupabase(displayId, data) {
+        // If offline, queue the change
+        if (!this.isOnline) {
+            console.log('Offline - queuing save for later');
+            this.offlineQueue.push({
+                action: 'save',
+                displayId,
+                data,
+                timestamp: new Date().toISOString()
+            });
+            // Still save to localStorage as backup
+            this._saveToLocalStorage(displayId, data);
+            return { success: true, mode: 'offline-queued' };
+        }
+
         try {
             const sb = SupabaseClient.get();
             if (!sb) throw new Error('Supabase not initialized');
@@ -215,6 +326,19 @@ class StorageAdapter {
     }
 
     async _deleteFromSupabase(displayId) {
+        // If offline, queue the change
+        if (!this.isOnline) {
+            console.log('Offline - queuing delete for later');
+            this.offlineQueue.push({
+                action: 'delete',
+                displayId,
+                timestamp: new Date().toISOString()
+            });
+            // Still delete from localStorage
+            this._deleteFromLocalStorage(displayId);
+            return { success: true, mode: 'offline-queued' };
+        }
+
         try {
             const sb = SupabaseClient.get();
             if (!sb) throw new Error('Supabase not initialized');
@@ -308,6 +432,30 @@ class StorageAdapter {
             this.mode = mode;
             console.log(`Storage mode set to ${mode}`);
         }
+    }
+
+    // Get offline queue status
+    getOfflineQueueStatus() {
+        return {
+            isOnline: this.isOnline,
+            queueLength: this.offlineQueue.length,
+            queue: this.offlineQueue
+        };
+    }
+
+    // Manually trigger sync (for debugging)
+    async forceSyncOfflineQueue() {
+        if (!this.isOnline) {
+            console.warn('Cannot sync - still offline');
+            return;
+        }
+        await this._syncOfflineQueue();
+    }
+
+    // Clear offline queue (for cleanup)
+    clearOfflineQueue() {
+        this.offlineQueue = [];
+        console.log('Offline queue cleared');
     }
 }
 

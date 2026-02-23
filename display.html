@@ -423,7 +423,20 @@
                             </div>
                             <div class="bid">
                                 <div class="bid-label">Current Bid</div>
-                                <div class="bid-amount">$${(item.currentBid || 0).toLocaleString()}</div>
+                                ${(data.event?.silentMode && !item.isRevealed) ? `
+                                    <div style="
+                                        font-size: 2.5rem;
+                                        font-weight: 800;
+                                        color: #f59e0b;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 12px;
+                                    ">
+                                        🔒 <span style="font-size: 1.5rem;">Hidden</span>
+                                    </div>
+                                ` : `
+                                    <div class="bid-amount">$${(item.currentBid || 0).toLocaleString()}</div>
+                                `}
                             </div>
                         </div>
                     `).join('')}

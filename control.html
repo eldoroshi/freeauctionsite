@@ -417,6 +417,33 @@
 
     <button class="btn-add" onclick="openAddModal()">+</button>
 
+    <!-- Silent Mode Controls -->
+    <div id="silentModeControls" style="display: none; position: fixed; bottom: 100px; right: 20px; z-index: 100;">
+        <button onclick="toggleSilentMode()" style="
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+            cursor: pointer;
+            margin-bottom: 12px;
+        " title="Toggle Silent Mode">👁️</button>
+        <button onclick="revealAllBids()" style="
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #10b981;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+        " title="Reveal All Bids">🔓</button>
+    </div>
+
     <!-- Premium Feature Modules -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="config/env.js"></script>
@@ -770,6 +797,105 @@
             if (pollInterval) clearInterval(pollInterval);
             if (syncManager) syncManager.unsubscribe();
         });
+
+        // Silent Mode Functions
+        async function checkSilentModeFeature() {
+            // Check if premium user has access to silent mode
+            if (isPremiumMode) {
+                const hasAccess = await SupabaseClient.hasFeatureAccess('silent_mode');
+                if (hasAccess) {
+                    document.getElementById('silentModeControls').style.display = 'block';
+                }
+            }
+        }
+
+        async function toggleSilentMode() {
+            if (!currentData) return;
+
+            const newMode = !currentData.event.silentMode;
+            currentData.event.silentMode = newMode;
+
+            // Hide all bids when enabling silent mode
+            if (newMode) {
+                currentData.items.forEach(item => {
+                    item.isHidden = true;
+                    item.isRevealed = false;
+                });
+            }
+
+            await saveDisplay();
+
+            showSaveIndicator(newMode ? 'Silent Mode Enabled 👁️' : 'Silent Mode Disabled');
+        }
+
+        async function revealAllBids() {
+            if (!currentData || !currentData.event.silentMode) return;
+
+            if (!confirm('Reveal all bids to the audience?')) return;
+
+            // Reveal all items
+            currentData.items.forEach(item => {
+                item.isRevealed = true;
+                item.isHidden = false;
+            });
+
+            await saveDisplay();
+
+            showSaveIndicator('All Bids Revealed! 🎉');
+        }
+
+        async function toggleItemVisibility(itemId) {
+            if (!currentData || !currentData.event.silentMode) return;
+
+            const item = currentData.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            item.isRevealed = !item.isRevealed;
+            item.isHidden = !item.isRevealed;
+
+            await saveDisplay();
+
+            showSaveIndicator(item.isRevealed ? 'Bid Revealed' : 'Bid Hidden');
+        }
+
+        // Enhanced save indicator with custom message
+        function showSaveIndicator(message = '✓ Saved & Synced') {
+            const indicator = document.createElement('div');
+            indicator.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 0.875rem;
+                font-weight: 600;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.3s ease-out;
+            `;
+            indicator.textContent = message;
+
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            document.body.appendChild(indicator);
+
+            setTimeout(() => {
+                indicator.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => indicator.remove(), 300);
+            }, 2000);
+        }
+
+        // Check silent mode feature on init
+        setTimeout(checkSilentModeFeature, 1000);
     </script>
 </body>
 </html>
