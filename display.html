@@ -378,6 +378,50 @@
         let carouselProgressInterval = null;
         const CAROUSEL_DURATION = 6000; // ms per item
 
+        // Real-time listener for free users:
+        // Combines BroadcastChannel (instant, same browser) +
+        // storage event (instant, cross-tab) +
+        // direct localStorage poll at 500ms (catches everything else)
+        function startRealTimeListener() {
+            const storageKey = `bidscreen_display_${displayId}`;
+
+            // 1. BroadcastChannel — instant same-browser updates
+            try {
+                const bc = new BroadcastChannel(`bidscreen_${displayId}`);
+                bc.onmessage = (e) => {
+                    if (e.data?.type === 'update' && e.data.data) {
+                        currentData = e.data.data;
+                        renderDisplay(currentData);
+                    }
+                };
+                window._displayBroadcastChannel = bc;
+            } catch (e) { /* not supported */ }
+
+            // 2. Storage event — fires when another tab writes to localStorage
+            window.addEventListener('storage', (e) => {
+                if (e.key === storageKey && e.newValue) {
+                    try {
+                        const data = JSON.parse(e.newValue);
+                        if (data) { currentData = data; renderDisplay(currentData); }
+                    } catch (e) { /* ignore */ }
+                }
+            });
+
+            // 3. Direct localStorage poll — 500ms, synchronous, zero async overhead
+            // This is the "always-on listener" that catches any missed updates
+            let lastRaw = localStorage.getItem(storageKey);
+            pollInterval = setInterval(() => {
+                const raw = localStorage.getItem(storageKey);
+                if (raw && raw !== lastRaw) {
+                    lastRaw = raw;
+                    try {
+                        const data = JSON.parse(raw);
+                        if (data) { currentData = data; renderDisplay(currentData); }
+                    } catch (e) { /* ignore */ }
+                }
+            }, 500);
+        }
+
         // Initialize
         async function init() {
             if (!displayId) {
@@ -427,38 +471,8 @@
                     // Show connection indicator
                     showConnectionIndicator();
                 } else {
-                    console.log('Free mode: Using BroadcastChannel + storage events + polling');
-
-                    // PRIMARY: BroadcastChannel — instant same-device cross-tab sync
-                    try {
-                        const bc = new BroadcastChannel(`bidscreen_${displayId}`);
-                        bc.onmessage = (e) => {
-                            if (e.data?.type === 'update' && e.data.data) {
-                                currentData = e.data.data;
-                                renderDisplay(currentData);
-                            }
-                        };
-                        // Store reference for cleanup
-                        window._displayBroadcastChannel = bc;
-                    } catch (e) {
-                        console.log('BroadcastChannel not supported');
-                    }
-
-                    // FALLBACK: native storage event (fires across tabs when localStorage changes)
-                    window.addEventListener('storage', (e) => {
-                        if (e.key === `bidscreen_display_${displayId}` && e.newValue) {
-                            try {
-                                const data = JSON.parse(e.newValue);
-                                if (data) {
-                                    currentData = data;
-                                    renderDisplay(currentData);
-                                }
-                            } catch (err) { /* ignore parse errors */ }
-                        }
-                    });
-
-                    // LAST RESORT: 1-second polling (catches any edge cases)
-                    pollInterval = setInterval(loadDisplay, 1000);
+                    console.log('Free mode: starting real-time listener');
+                    startRealTimeListener();
                 }
             } catch (error) {
                 console.error('Error initializing display:', error);
@@ -724,13 +738,14 @@
         // Handle visibility change (pause polling when hidden)
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                if (pollInterval) clearInterval(pollInterval);
+                if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
             } else {
                 if (storage.getMode() === 'localStorage') {
-                    loadDisplay(); // Immediately catch up on any missed changes
-                    pollInterval = setInterval(loadDisplay, 1000);
+                    // Catch up immediately then restart the watcher
+                    const raw = localStorage.getItem(`bidscreen_display_${displayId}`);
+                    if (raw) { try { const d = JSON.parse(raw); if (d) { currentData = d; renderDisplay(currentData); } } catch(e){} }
+                    startRealTimeListener();
                 } else if (syncManager) {
-                    // Refresh real-time connection
                     syncManager.refresh();
                 }
             }

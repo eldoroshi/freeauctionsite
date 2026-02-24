@@ -429,7 +429,7 @@ function loadFromStorage() {
     try {
         const items = localStorage.getItem('bidscreen_items');
         const event = localStorage.getItem('bidscreen_event');
-        
+
         if (items) {
             auctionItems = JSON.parse(items);
         }
@@ -437,6 +437,18 @@ function loadFromStorage() {
             eventSettings = JSON.parse(event);
             document.getElementById('eventName').value = eventSettings.name || '';
             document.getElementById('eventSubtitle').value = eventSettings.subtitle || '';
+        }
+
+        // Auto-detect active display ID if not already stored
+        // (covers users who launched a display before this feature was added)
+        if (!localStorage.getItem('bidscreen_active_display_id')) {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('bidscreen_display_')) {
+                    localStorage.setItem('bidscreen_active_display_id', key.replace('bidscreen_display_', ''));
+                    break;
+                }
+            }
         }
     } catch (e) {
         console.error('Error loading from storage:', e);
