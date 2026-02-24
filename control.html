@@ -417,6 +417,29 @@
 
     <button class="btn-add" onclick="openAddModal()">+</button>
 
+    <!-- Display Mode Controls (Premium) -->
+    <div id="displayModeControls" style="display: none; position: fixed; bottom: 240px; right: 20px; z-index: 100; flex-direction: column; gap: 8px; align-items: center;">
+        <span style="color: #64748b; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Mode</span>
+        <button id="modeLeaderboard" onclick="setDisplayMode('leaderboard')" style="
+            width: 60px; height: 60px; border-radius: 50%;
+            background: #6366f1; color: white; border: none;
+            font-size: 1.4rem; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+        " title="Leaderboard View">📊</button>
+        <button id="modeSpotlight" onclick="setDisplayMode('spotlight')" style="
+            width: 60px; height: 60px; border-radius: 50%;
+            background: #6366f1; color: white; border: none;
+            font-size: 1.4rem; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+        " title="Spotlight View">🔦</button>
+        <button id="modeCarousel" onclick="setDisplayMode('carousel')" style="
+            width: 60px; height: 60px; border-radius: 50%;
+            background: #6366f1; color: white; border: none;
+            font-size: 1.4rem; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+        " title="Carousel View">🎠</button>
+    </div>
+
     <!-- Silent Mode Controls -->
     <div id="silentModeControls" style="display: none; position: fixed; bottom: 100px; right: 20px; z-index: 100;">
         <button onclick="toggleSilentMode()" style="
@@ -900,6 +923,35 @@
 
         // Check silent mode feature on init
         setTimeout(checkSilentModeFeature, 1000);
+
+        // Display Mode Functions
+        async function checkDisplayModeFeature() {
+            if (isPremiumMode) {
+                const el = document.getElementById('displayModeControls');
+                el.style.display = 'flex';
+                updateDisplayModeButtons(currentData?.event?.displayMode || 'leaderboard');
+            }
+        }
+
+        function updateDisplayModeButtons(activeMode) {
+            ['leaderboard', 'spotlight', 'carousel'].forEach(mode => {
+                const btn = document.getElementById(`mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
+                if (btn) {
+                    btn.style.background = mode === activeMode ? '#4f46e5' : '#6366f1';
+                    btn.style.outline = mode === activeMode ? '3px solid white' : 'none';
+                }
+            });
+        }
+
+        async function setDisplayMode(mode) {
+            if (!currentData) return;
+            currentData.event.displayMode = mode;
+            await saveDisplay();
+            updateDisplayModeButtons(mode);
+            showSaveIndicator(`Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)} 📺`);
+        }
+
+        setTimeout(checkDisplayModeFeature, 1100);
     </script>
 </body>
 </html>

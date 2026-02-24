@@ -230,6 +230,97 @@
             margin-bottom: 16px;
         }
         
+        /* Spotlight mode */
+        .spotlight-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .spotlight-card {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: clamp(40px, 8vw, 80px);
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+            animation: spotlightIn 0.6s ease-out;
+        }
+        @keyframes spotlightIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        .spotlight-rank {
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 800;
+            color: #fbbf24;
+            margin-bottom: 16px;
+        }
+        .spotlight-name {
+            font-size: clamp(2rem, 5vw, 4.5rem);
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+        }
+        .spotlight-desc {
+            font-size: clamp(1rem, 2.5vw, 1.75rem);
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 40px;
+        }
+        .spotlight-bid {
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 800;
+            color: var(--accent);
+            animation: bidPop 0.5s ease-out;
+        }
+        .spotlight-label {
+            font-size: clamp(0.875rem, 2vw, 1.25rem);
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .spotlight-nav {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 40px;
+        }
+        .spotlight-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .spotlight-dot.active {
+            background: white;
+            transform: scale(1.4);
+        }
+        /* Carousel mode */
+        .carousel-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .carousel-progress {
+            width: 100%;
+            max-width: 900px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+        .carousel-bar {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+            transition: width 0.1s linear;
+        }
         /* Fullscreen hint */
         .fullscreen-hint {
             position: fixed;
@@ -281,6 +372,11 @@
         let currentData = null;
         let pollInterval = null;
         let syncManager = null;
+        let carouselIndex = 0;
+        let carouselInterval = null;
+        let carouselProgress = 0;
+        let carouselProgressInterval = null;
+        const CAROUSEL_DURATION = 6000; // ms per item
 
         // Initialize
         async function init() {
@@ -405,20 +501,51 @@
             });
         }
         
-        // Render display
+        // Render display — branches on displayMode
         function renderDisplay(data) {
-            const totalRaised = data.items.reduce((sum, item) => sum + (item.currentBid || 0), 0);
-            const itemCount = data.items.length;
-            
+            const mode = data.event?.displayMode || 'leaderboard';
+            if (mode === 'spotlight') {
+                renderSpotlight(data);
+            } else if (mode === 'carousel') {
+                renderCarousel(data);
+            } else {
+                renderLeaderboard(data);
+            }
+        }
+
+        // Footer HTML helper
+        function footerHtml(data) {
+            const total = data.items.reduce((s, i) => s + (i.currentBid || 0), 0);
+            return `
+                <div class="footer">
+                    <div class="total">Total Raised: <strong>$${total.toLocaleString()}</strong></div>
+                    <div class="stats">
+                        <span>${data.items.length} Items</span>
+                        <span>Updated: ${new Date().toLocaleTimeString()}</span>
+                    </div>
+                    ${!data.event?.hideWatermark ? '<div class="powered">Powered by <a href="https://freeauctionsite.com">FreeAuctionSite.io</a></div>' : ''}
+                </div>`;
+        }
+
+        // Bid display helper (handles silent mode)
+        function bidHtml(item, event) {
+            if (event?.silentMode && !item.isRevealed) {
+                return `<div style="font-size:2.5rem;font-weight:800;color:#f59e0b;display:flex;align-items:center;gap:12px;">🔒 <span style="font-size:1.5rem;">Hidden</span></div>`;
+            }
+            return `<div class="bid-amount">$${(item.currentBid || 0).toLocaleString()}</div>`;
+        }
+
+        // ── Mode 1: Leaderboard (default) ──
+        function renderLeaderboard(data) {
+            stopCarousel();
             document.getElementById('app').innerHTML = `
                 <div class="header">
                     <h1>${escapeHtml(data.event?.name || 'Auction')}</h1>
                     ${data.event?.subtitle ? `<p>${escapeHtml(data.event.subtitle)}</p>` : ''}
                 </div>
-                
                 <div class="items">
                     ${data.items.map((item, index) => `
-                        <div class="item" style="animation-delay: ${index * 0.1}s">
+                        <div class="item" style="animation-delay:${index * 0.1}s">
                             <div class="rank">#${index + 1}</div>
                             <div class="info">
                                 <h3>${escapeHtml(item.name)}</h3>
@@ -426,34 +553,93 @@
                             </div>
                             <div class="bid">
                                 <div class="bid-label">Current Bid</div>
-                                ${(data.event?.silentMode && !item.isRevealed) ? `
-                                    <div style="
-                                        font-size: 2.5rem;
-                                        font-weight: 800;
-                                        color: #f59e0b;
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 12px;
-                                    ">
-                                        🔒 <span style="font-size: 1.5rem;">Hidden</span>
-                                    </div>
-                                ` : `
-                                    <div class="bid-amount">$${(item.currentBid || 0).toLocaleString()}</div>
-                                `}
+                                ${bidHtml(item, data.event)}
                             </div>
                         </div>
                     `).join('')}
                 </div>
-                
-                <div class="footer">
-                    <div class="total">Total Raised: <strong>$${totalRaised.toLocaleString()}</strong></div>
-                    <div class="stats">
-                        <span>${itemCount} Items</span>
-                        <span>Updated: ${new Date().toLocaleTimeString()}</span>
-                    </div>
-                    ${!data.event?.hideWatermark ? '<div class="powered">Powered by <a href="https://freeauctionsite.com">FreeAuctionSite.io</a></div>' : ''}
+                ${footerHtml(data)}`;
+        }
+
+        // ── Mode 2: Spotlight ──
+        function renderSpotlight(data, idx) {
+            stopCarousel();
+            const items = data.items;
+            if (!items.length) { renderLeaderboard(data); return; }
+            const i = (idx !== undefined ? idx : 0) % items.length;
+            carouselIndex = i;
+            const item = items[i];
+            const dots = items.map((_, d) =>
+                `<div class="spotlight-dot ${d === i ? 'active' : ''}" onclick="renderSpotlight(currentData,${d})"></div>`
+            ).join('');
+            document.getElementById('app').innerHTML = `
+                <div class="header">
+                    <h1>${escapeHtml(data.event?.name || 'Auction')}</h1>
+                    ${data.event?.subtitle ? `<p>${escapeHtml(data.event.subtitle)}</p>` : ''}
                 </div>
-            `;
+                <div class="spotlight-wrap">
+                    <div class="spotlight-card">
+                        <div class="spotlight-rank">#${i + 1}</div>
+                        <div class="spotlight-name">${escapeHtml(item.name)}</div>
+                        ${item.description ? `<div class="spotlight-desc">${escapeHtml(item.description)}</div>` : ''}
+                        <div class="spotlight-label">${data.event?.silentMode && !item.isRevealed ? '' : 'Current Bid'}</div>
+                        <div class="spotlight-bid">${data.event?.silentMode && !item.isRevealed
+                            ? '🔒 Hidden'
+                            : '$' + (item.currentBid || 0).toLocaleString()}</div>
+                        <div class="spotlight-nav">${dots}</div>
+                    </div>
+                </div>
+                ${footerHtml(data)}`;
+        }
+
+        // ── Mode 3: Carousel ──
+        function renderCarousel(data) {
+            const items = data.items;
+            if (!items.length) { renderLeaderboard(data); return; }
+            stopCarousel();
+            carouselIndex = 0;
+            carouselProgress = 0;
+            showCarouselItem(data, carouselIndex);
+
+            carouselInterval = setInterval(() => {
+                carouselIndex = (carouselIndex + 1) % items.length;
+                carouselProgress = 0;
+                showCarouselItem(data, carouselIndex);
+            }, CAROUSEL_DURATION);
+
+            carouselProgressInterval = setInterval(() => {
+                carouselProgress += 100;
+                const bar = document.getElementById('carouselBar');
+                if (bar) bar.style.width = Math.min((carouselProgress / CAROUSEL_DURATION) * 100, 100) + '%';
+            }, 100);
+        }
+
+        function showCarouselItem(data, idx) {
+            const items = data.items;
+            const item = items[idx];
+            document.getElementById('app').innerHTML = `
+                <div class="header">
+                    <h1>${escapeHtml(data.event?.name || 'Auction')}</h1>
+                    ${data.event?.subtitle ? `<p>${escapeHtml(data.event.subtitle)}</p>` : ''}
+                </div>
+                <div class="carousel-wrap">
+                    <div class="carousel-progress"><div class="carousel-bar" id="carouselBar" style="width:0%"></div></div>
+                    <div class="spotlight-card">
+                        <div class="spotlight-rank">#${idx + 1} of ${items.length}</div>
+                        <div class="spotlight-name">${escapeHtml(item.name)}</div>
+                        ${item.description ? `<div class="spotlight-desc">${escapeHtml(item.description)}</div>` : ''}
+                        <div class="spotlight-label">${data.event?.silentMode && !item.isRevealed ? '' : 'Current Bid'}</div>
+                        <div class="spotlight-bid">${data.event?.silentMode && !item.isRevealed
+                            ? '🔒 Hidden'
+                            : '$' + (item.currentBid || 0).toLocaleString()}</div>
+                    </div>
+                </div>
+                ${footerHtml(data)}`;
+        }
+
+        function stopCarousel() {
+            if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null; }
+            if (carouselProgressInterval) { clearInterval(carouselProgressInterval); carouselProgressInterval = null; }
         }
         
         // Show demo data
@@ -526,6 +712,7 @@
         window.addEventListener('beforeunload', () => {
             if (pollInterval) clearInterval(pollInterval);
             if (syncManager) syncManager.unsubscribe();
+            stopCarousel();
         });
     </script>
 </body>
