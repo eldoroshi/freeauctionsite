@@ -129,7 +129,11 @@ class StripeCheckout {
         }
 
         try {
+            const { data: { session } } = await sb.auth.getSession();
             const { data, error } = await sb.functions.invoke('create-checkout-session', {
+                headers: {
+                    Authorization: `Bearer ${session?.access_token}`
+                },
                 body: {
                     ...params,
                     successUrl: `${ENV_CONFIG.APP_URL}/pages/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
@@ -160,7 +164,11 @@ class StripeCheckout {
             const sb = SupabaseClient.get();
             if (!sb) throw new Error('Supabase not initialized');
 
+            const { data: { session } } = await sb.auth.getSession();
             const { data, error } = await sb.functions.invoke('create-portal-session', {
+                headers: {
+                    Authorization: `Bearer ${session?.access_token}`
+                },
                 body: {
                     userId: user.id,
                     returnUrl: `${ENV_CONFIG.APP_URL}/index.html#tool`
