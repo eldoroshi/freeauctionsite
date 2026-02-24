@@ -721,10 +721,24 @@
             document.getElementById('editModal').classList.add('hidden');
         }
 
+        // BroadcastChannel for instant same-device cross-tab sync
+        let broadcastChannel = null;
+        try {
+            broadcastChannel = new BroadcastChannel(`bidscreen_${displayId}`);
+        } catch (e) {
+            console.log('BroadcastChannel not supported, using storage events only');
+        }
+
         // Save display
         async function saveDisplay() {
             try {
                 await storage.saveEvent(displayId, currentData);
+
+                // Broadcast instantly to display tab on same device
+                if (broadcastChannel) {
+                    broadcastChannel.postMessage({ type: 'update', data: currentData });
+                }
+
                 renderControl(currentData);
 
                 // Show brief success indicator for premium users
@@ -823,6 +837,7 @@
         window.addEventListener('beforeunload', () => {
             if (pollInterval) clearInterval(pollInterval);
             if (syncManager) syncManager.unsubscribe();
+            if (broadcastChannel) broadcastChannel.close();
         });
 
         // Silent Mode Functions
