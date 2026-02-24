@@ -445,6 +445,7 @@
 
         async function placeBid(itemId) {
             const input = document.getElementById(`bid_${itemId}`);
+            const button = input.nextElementSibling;
             const amount = parseFloat(input.value);
 
             if (!amount || isNaN(amount)) {
@@ -464,7 +465,6 @@
                 const sb = SupabaseClient.get();
                 if (!sb) throw new Error('Bidding not available');
 
-                const button = event.target;
                 button.disabled = true;
                 button.textContent = 'Placing...';
 
@@ -487,7 +487,6 @@
                 console.error('Error placing bid:', error);
                 showMessage(error.message || 'Failed to place bid', 'error');
             } finally {
-                const button = event.target;
                 button.disabled = false;
                 button.textContent = 'Place Bid';
             }

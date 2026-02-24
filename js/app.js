@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Add Item
-function addItem() {
+async function addItem() {
     const nameInput = document.getElementById('itemName');
     const descInput = document.getElementById('itemDescription');
     const startingInput = document.getElementById('startingBid');
@@ -33,6 +33,20 @@ function addItem() {
         alert('Please enter an item name');
         nameInput.focus();
         return;
+    }
+
+    // Enforce 10-item limit for free users
+    const FREE_ITEM_LIMIT = 10;
+    if (auctionItems.length >= FREE_ITEM_LIMIT) {
+        const isPremium = typeof SupabaseClient !== 'undefined' && await SupabaseClient.isPremium();
+        if (!isPremium) {
+            if (typeof featureGate !== 'undefined') {
+                featureGate.showLimitReached('items', auctionItems.length, FREE_ITEM_LIMIT);
+            } else {
+                alert(`Free plan is limited to ${FREE_ITEM_LIMIT} items. Upgrade to Pro for unlimited items.`);
+            }
+            return;
+        }
     }
 
     const item = {
