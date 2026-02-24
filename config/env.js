@@ -13,11 +13,11 @@
 
 const ENV_CONFIG = {
     // Supabase Configuration
-    SUPABASE_URL: 'https://your-project.supabase.co',
-    SUPABASE_ANON_KEY: 'your-anon-key-here',
+    SUPABASE_URL: 'https://heupqfqdvtgngotpcczi.supabase.co',
+    SUPABASE_ANON_KEY: 'sb_publishable_JJUWUolse6-ZRtSsccrojQ_ieN2nwxD',
 
     // Stripe Configuration
-    STRIPE_PUBLISHABLE_KEY: 'pk_test_your-stripe-key-here',
+    STRIPE_PUBLISHABLE_KEY: 'pk_test_51T4MtNIOYXVb296P3du9veNmILj8siCLomWl4ILw0tVCGxoadbsqCwqe5p7M6Jymo4y1qOHsTNJTLiYLvNzvI8vh007muOkf0Y',
 
     // Feature Flags
     PREMIUM_FEATURES_ENABLED: true,  // Set to false to disable all premium features
@@ -26,8 +26,8 @@ const ENV_CONFIG = {
     APP_URL: window.location.origin,
 
     // Pricing (Price IDs from Stripe)
-    STRIPE_PRICE_ID_PRO_MONTHLY: 'price_pro_monthly_9',
-    STRIPE_PRICE_ID_EVENT_ONETIME: 'price_event_29',
+    STRIPE_PRICE_ID_PRO_MONTHLY: 'price_1T4MyRIOYXVb296PImeYTBfD',
+    STRIPE_PRICE_ID_EVENT_ONETIME: 'price_event_299',
 
     // Development mode detection
     isDevelopment: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',

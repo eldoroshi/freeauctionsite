@@ -1,5 +1,5 @@
 // Stripe Checkout - Payment Processing for Premium Plans
-// Handles Pro ($9/mo) and Event ($29 one-time) subscriptions
+// Handles Pro ($19.99/mo) and Event ($299 one-time) subscriptions
 // Part of FreeAuctionSite Premium Features
 
 class StripeCheckout {
@@ -31,7 +31,7 @@ class StripeCheckout {
         }
     }
 
-    // Subscribe to Pro plan ($9/month)
+    // Subscribe to Pro plan ($19.99/month)
     async subscribeProPlan() {
         await this.initialize();
 
@@ -76,7 +76,7 @@ class StripeCheckout {
         }
     }
 
-    // Purchase Event plan ($29 one-time)
+    // Purchase Event plan ($299 one-time)
     async purchaseEventPlan() {
         await this.initialize();
 

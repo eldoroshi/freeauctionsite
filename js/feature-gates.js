@@ -213,7 +213,7 @@ class FeatureGate {
                     font-size: 0.875rem;
                     color: #94a3b8;
                 ">
-                    Starting at <strong style="color: #6366f1;">$9/month</strong> • Cancel anytime
+                    Starting at <strong style="color: #6366f1;">$19.99/month</strong> • Cancel anytime
                 </p>
             </div>
 

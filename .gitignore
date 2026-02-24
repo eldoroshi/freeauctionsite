@@ -1,4 +1,5 @@
 # Environment files with secrets
+config/env.js
 config/env.production.js
 config/env.local.js
 .env

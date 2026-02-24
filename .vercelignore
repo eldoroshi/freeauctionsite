@@ -1,0 +1,11 @@
+# Supabase Edge Functions - deployed via `supabase functions deploy`, not Vercel
+api/
+
+# Migration SQL files - for Supabase only
+migrations/
+
+# Development docs
+COMPLETION_REPORT.md
+FINAL_SUMMARY.md
+IMPLEMENTATION_GUIDE.md
+IMPLEMENTATION_STATUS.md
