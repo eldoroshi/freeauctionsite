@@ -192,7 +192,11 @@ class StripeCheckout {
             const sb = SupabaseClient.get();
             if (!sb) throw new Error('Supabase not initialized');
 
+            const { data: { session } } = await sb.auth.getSession();
             const { data, error } = await sb.functions.invoke('verify-checkout-session', {
+                headers: {
+                    Authorization: `Bearer ${session?.access_token}`
+                },
                 body: { sessionId }
             });
 

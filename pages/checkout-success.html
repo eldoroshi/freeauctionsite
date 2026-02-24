@@ -230,52 +230,26 @@
                 return;
             }
 
-            // Stripe only redirects here on successful payment.
-            // Poll the user profile to get the plan once the webhook updates it.
-            const sb = SupabaseClient.get();
-            if (!sb) {
-                // Supabase not available - show success anyway (Stripe confirmed payment)
-                showSuccess('pro');
-                return;
-            }
+            try {
+                const result = await stripeCheckout.verifyCheckoutSession(sessionId);
 
-            let plan = 'pro';
-            const maxAttempts = 6;
+                if (result.success) {
+                    const plan = result.data?.plan || 'pro';
+                    showSuccess(plan);
 
-            for (let i = 0; i < maxAttempts; i++) {
-                try {
-                    const { data: { user } } = await sb.auth.getUser();
-                    if (user) {
-                        const { data: profile } = await sb
-                            .from('profiles')
-                            .select('subscription_tier, subscription_status')
-                            .eq('id', user.id)
-                            .single();
-
-                        if (profile && ['pro', 'event'].includes(profile.subscription_tier) && profile.subscription_status === 'active') {
-                            plan = profile.subscription_tier;
-                            break;
-                        }
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'purchase', {
+                            value: plan === 'pro' ? 19.99 : 299,
+                            currency: 'USD',
+                            transaction_id: sessionId
+                        });
                     }
-                } catch (e) {
-                    // ignore and retry
+                } else {
+                    showError(result.error || 'Payment verification failed');
                 }
-
-                // Wait 2s between attempts for webhook to fire
-                if (i < maxAttempts - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
-            }
-
-            showSuccess(plan);
-
-            // Track conversion
-            if (typeof gtag !== 'undefined') {
-                gtag('event', 'purchase', {
-                    value: plan === 'pro' ? 19.99 : 299,
-                    currency: 'USD',
-                    transaction_id: sessionId
-                });
+            } catch (error) {
+                console.error('Error verifying payment:', error);
+                showError('Unable to verify payment. Please contact support.');
             }
         }
 
