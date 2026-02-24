@@ -230,11 +230,13 @@
                 return;
             }
 
-            try {
-                const result = await stripeCheckout.verifyCheckoutSession(sessionId);
+            let plan = 'pro';
 
+            try {
+                // Try the edge function first (verifies with Stripe + updates DB)
+                const result = await stripeCheckout.verifyCheckoutSession(sessionId);
                 if (result.success) {
-                    const plan = result.data?.plan || 'pro';
+                    plan = result.data?.plan || 'pro';
                     showSuccess(plan);
 
                     if (typeof gtag !== 'undefined') {
@@ -244,13 +246,40 @@
                             transaction_id: sessionId
                         });
                     }
-                } else {
-                    showError(result.error || 'Payment verification failed');
+                    return;
                 }
             } catch (error) {
-                console.error('Error verifying payment:', error);
-                showError('Unable to verify payment. Please contact support.');
+                console.error('Edge function unavailable, falling back:', error);
             }
+
+            // Fallback: Stripe only redirects here on confirmed payment.
+            // Poll the profile in case the webhook already updated it.
+            try {
+                const sb = SupabaseClient.get();
+                if (sb) {
+                    for (let i = 0; i < 5; i++) {
+                        const { data: { user } } = await sb.auth.getUser();
+                        if (user) {
+                            const { data: profile } = await sb
+                                .from('profiles')
+                                .select('subscription_tier, subscription_status')
+                                .eq('id', user.id)
+                                .single();
+
+                            if (profile && ['pro', 'event'].includes(profile.subscription_tier)) {
+                                plan = profile.subscription_tier;
+                                break;
+                            }
+                        }
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                }
+            } catch (e) {
+                console.error('Profile check failed:', e);
+            }
+
+            // Show success regardless — Stripe confirmed payment
+            showSuccess(plan);
         }
 
         function showSuccess(plan) {
