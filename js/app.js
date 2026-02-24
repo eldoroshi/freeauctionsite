@@ -179,6 +179,9 @@ async function launchDisplay() {
         // Save event using storage adapter
         await storage.saveEvent(displayId, displayData);
 
+        // Remember this display ID so future edits keep the display in sync
+        localStorage.setItem('bidscreen_active_display_id', displayId);
+
         // Create display URL
         const displayUrl = `${window.location.origin}/display.html?id=${displayId}`;
         const controlUrl = `${window.location.origin}/control.html?id=${displayId}`;
@@ -399,6 +402,27 @@ function copyToClipboard(text) {
 function saveToStorage() {
     localStorage.setItem('bidscreen_items', JSON.stringify(auctionItems));
     localStorage.setItem('bidscreen_event', JSON.stringify(eventSettings));
+
+    // If there's an active display, sync it so the display screen updates instantly
+    const activeDisplayId = localStorage.getItem('bidscreen_active_display_id');
+    if (activeDisplayId) {
+        const displayData = {
+            event: {
+                name: eventSettings.name || 'Auction',
+                subtitle: eventSettings.subtitle || ''
+            },
+            items: [...auctionItems].sort((a, b) => b.currentBid - a.currentBid),
+            updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(`bidscreen_display_${activeDisplayId}`, JSON.stringify(displayData));
+
+        // Broadcast instantly to display tab on same device
+        try {
+            const bc = new BroadcastChannel(`bidscreen_${activeDisplayId}`);
+            bc.postMessage({ type: 'update', data: displayData });
+            bc.close();
+        } catch (e) { /* BroadcastChannel not supported */ }
+    }
 }
 
 function loadFromStorage() {
