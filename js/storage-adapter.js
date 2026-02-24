@@ -230,6 +230,7 @@ class StorageAdapter {
                 hide_watermark: data.event?.hideWatermark || false,
                 allow_public_bidding: data.event?.allowPublicBidding || false,
                 silent_mode: data.event?.silentMode || false,
+                display_mode: data.event?.displayMode || 'leaderboard',
                 updated_at: new Date().toISOString()
             };
 
@@ -297,6 +298,7 @@ class StorageAdapter {
                     hideWatermark: event.hide_watermark,
                     allowPublicBidding: event.allow_public_bidding,
                     silentMode: event.silent_mode,
+                    displayMode: event.display_mode || 'leaderboard',
                     branding: event.custom_colors
                 },
                 items: (event.auction_items || [])

@@ -90,6 +90,7 @@ class SyncManager {
                     hideWatermark: event.hide_watermark,
                     allowPublicBidding: event.allow_public_bidding,
                     silentMode: event.silent_mode,
+                    displayMode: event.display_mode || 'leaderboard',
                     branding: event.custom_colors
                 },
                 items: (event.auction_items || [])
@@ -185,6 +186,7 @@ class SyncManager {
                     hideWatermark: event.hide_watermark,
                     allowPublicBidding: event.allow_public_bidding,
                     silentMode: event.silent_mode,
+                    displayMode: event.display_mode || 'leaderboard',
                     branding: event.custom_colors
                 },
                 items: (event.auction_items || [])

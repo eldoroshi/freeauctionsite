@@ -427,9 +427,22 @@
                     // Show connection indicator
                     showConnectionIndicator();
                 } else {
-                    console.log('Free mode: Using localStorage polling');
+                    console.log('Free mode: Using localStorage polling + storage events');
 
-                    // Free tier: Use polling (existing behavior)
+                    // Free tier: listen for instant cross-tab storage events
+                    window.addEventListener('storage', (e) => {
+                        if (e.key === `bidscreen_display_${displayId}` && e.newValue) {
+                            try {
+                                const data = JSON.parse(e.newValue);
+                                if (data) {
+                                    currentData = data;
+                                    renderDisplay(currentData);
+                                }
+                            } catch (err) { /* ignore parse errors */ }
+                        }
+                    });
+
+                    // Also keep polling as fallback (e.g. same tab refresh)
                     pollInterval = setInterval(loadDisplay, 3000);
                 }
             } catch (error) {
