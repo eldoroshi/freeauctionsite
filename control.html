@@ -890,9 +890,10 @@
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            // Skip when typing inside an input or textarea
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            // Skip when an input/textarea/select is focused
+            const active = document.activeElement?.tagName;
+            if (active === 'INPUT' || active === 'TEXTAREA' || active === 'SELECT') return;
+            if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
 
             // Esc — close open modal
             if (e.key === 'Escape') {
@@ -901,11 +902,12 @@
                 return;
             }
 
-            // 1–9 — instantly open bid editor for that ranked item
+            // 1–9 — click the "Update Bid" button for that ranked item directly
             const rank = parseInt(e.key);
-            if (rank >= 1 && rank <= 9 && currentData?.items?.length >= rank) {
+            if (!isNaN(rank) && rank >= 1 && rank <= 9) {
                 e.preventDefault();
-                editBid(currentData.items[rank - 1].id);
+                const editBtns = document.querySelectorAll('#app .btn-primary');
+                if (editBtns[rank - 1]) editBtns[rank - 1].click();
             }
         });
 
