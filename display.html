@@ -378,46 +378,62 @@
         let carouselProgressInterval = null;
         const CAROUSEL_DURATION = 6000; // ms per item
 
-        // Real-time listener for free users:
-        // Combines BroadcastChannel (instant, same browser) +
-        // storage event (instant, cross-tab) +
-        // direct localStorage poll at 500ms (catches everything else)
+        // Apply an update to the display (deduplicates identical data)
+        function applyUpdate(data) {
+            if (!data) return;
+            if (JSON.stringify(data) === JSON.stringify(currentData)) return;
+            currentData = data;
+            renderDisplay(currentData);
+        }
+
+        // startRealTimeListener — four-layer real-time sync:
+        //  1. Supabase Broadcast  — instant, cross-device, via WebSocket
+        //  2. BroadcastChannel   — instant, same browser
+        //  3. storage event      — instant, cross-tab on same browser
+        //  4. localStorage poll  — 500ms fallback, catches anything missed
         function startRealTimeListener() {
             const storageKey = `bidscreen_display_${displayId}`;
 
-            // 1. BroadcastChannel — instant same-browser updates
+            // 1. Supabase Broadcast — works across any device (phone → TV, etc.)
+            try {
+                const sb = SupabaseClient && SupabaseClient.get();
+                if (sb) {
+                    window._supabaseDisplayChannel = sb
+                        .channel(`display:${displayId}`)
+                        .on('broadcast', { event: 'bid_update' }, ({ payload }) => {
+                            if (payload?.data) {
+                                // Also persist locally so poll stays in sync
+                                try { localStorage.setItem(storageKey, JSON.stringify(payload.data)); } catch(e){}
+                                applyUpdate(payload.data);
+                            }
+                        })
+                        .subscribe();
+                }
+            } catch(e) { console.log('Supabase Broadcast unavailable:', e.message); }
+
+            // 2. BroadcastChannel — instant, same browser (different tabs/windows)
             try {
                 const bc = new BroadcastChannel(`bidscreen_${displayId}`);
                 bc.onmessage = (e) => {
-                    if (e.data?.type === 'update' && e.data.data) {
-                        currentData = e.data.data;
-                        renderDisplay(currentData);
-                    }
+                    if (e.data?.type === 'update' && e.data.data) applyUpdate(e.data.data);
                 };
                 window._displayBroadcastChannel = bc;
             } catch (e) { /* not supported */ }
 
-            // 2. Storage event — fires when another tab writes to localStorage
+            // 3. storage event — fires in other tabs when localStorage changes
             window.addEventListener('storage', (e) => {
                 if (e.key === storageKey && e.newValue) {
-                    try {
-                        const data = JSON.parse(e.newValue);
-                        if (data) { currentData = data; renderDisplay(currentData); }
-                    } catch (e) { /* ignore */ }
+                    try { applyUpdate(JSON.parse(e.newValue)); } catch(e) {}
                 }
             });
 
-            // 3. Direct localStorage poll — 500ms, synchronous, zero async overhead
-            // This is the "always-on listener" that catches any missed updates
+            // 4. Direct localStorage poll — 500ms, zero async overhead, always-on
             let lastRaw = localStorage.getItem(storageKey);
             pollInterval = setInterval(() => {
                 const raw = localStorage.getItem(storageKey);
                 if (raw && raw !== lastRaw) {
                     lastRaw = raw;
-                    try {
-                        const data = JSON.parse(raw);
-                        if (data) { currentData = data; renderDisplay(currentData); }
-                    } catch (e) { /* ignore */ }
+                    try { applyUpdate(JSON.parse(raw)); } catch(e) {}
                 }
             }, 500);
         }
@@ -450,29 +466,20 @@
                     brandingManager.apply();
                 }
 
-                // Use real-time sync for premium users, polling for free users
-                if (storage.getMode() === 'supabase') {
-                    console.log('Premium mode: Using real-time sync');
+                // Always start the real-time listener (Supabase Broadcast + localStorage)
+                startRealTimeListener();
 
-                    // Initialize real-time sync
+                // Premium users additionally get Supabase postgres_changes via SyncManager
+                if (storage.getMode() === 'supabase') {
+                    console.log('Premium: adding SyncManager for postgres_changes');
                     syncManager = new SyncManager(displayId);
                     syncManager.subscribe((updatedData) => {
-                        console.log('Real-time update received');
-                        currentData = updatedData;
-                        renderDisplay(currentData);
-
-                        // Apply branding updates
+                        applyUpdate(updatedData);
                         if (updatedData.event?.branding) {
-                            const brandingManager = new BrandingManager(updatedData);
-                            brandingManager.apply();
+                            new BrandingManager(updatedData).apply();
                         }
                     });
-
-                    // Show connection indicator
                     showConnectionIndicator();
-                } else {
-                    console.log('Free mode: starting real-time listener');
-                    startRealTimeListener();
                 }
             } catch (error) {
                 console.error('Error initializing display:', error);
@@ -756,6 +763,9 @@
             if (pollInterval) clearInterval(pollInterval);
             if (syncManager) syncManager.unsubscribe();
             if (window._displayBroadcastChannel) window._displayBroadcastChannel.close();
+            if (window._supabaseDisplayChannel) {
+                try { window._supabaseDisplayChannel.unsubscribe(); } catch(e){}
+            }
             stopCarousel();
         });
     </script>

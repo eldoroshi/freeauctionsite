@@ -506,6 +506,9 @@
                 // Update the limitation notice based on mode
                 updateLimitationNotice();
 
+                // Set up Supabase Broadcast channel for cross-device sync
+                setupSupabaseChannel();
+
                 // Use real-time sync for premium users
                 if (isPremiumMode) {
                     console.log('Premium mode: Using real-time sync');
@@ -729,12 +732,38 @@
             console.log('BroadcastChannel not supported, using storage events only');
         }
 
+        // Supabase Realtime Broadcast channel — cross-device real-time sync
+        // Subscribe once; reuse the channel for all sends
+        let supabaseChannel = null;
+        function setupSupabaseChannel() {
+            try {
+                const sb = SupabaseClient && SupabaseClient.get();
+                if (sb && !supabaseChannel) {
+                    supabaseChannel = sb.channel(`display:${displayId}`).subscribe();
+                }
+            } catch(e) { console.log('Supabase channel setup failed:', e.message); }
+        }
+
+        async function broadcastViaSupabase(data) {
+            if (!supabaseChannel) return;
+            try {
+                await supabaseChannel.send({
+                    type: 'broadcast',
+                    event: 'bid_update',
+                    payload: { data }
+                });
+            } catch(e) { /* ignore send errors */ }
+        }
+
         // Save display
         async function saveDisplay() {
             try {
                 await storage.saveEvent(displayId, currentData);
 
-                // Broadcast instantly to display tab on same device
+                // Layer 1: Supabase Broadcast — cross-device real-time
+                broadcastViaSupabase(currentData);
+
+                // Layer 2: BroadcastChannel — instant same-browser update
                 if (broadcastChannel) {
                     broadcastChannel.postMessage({ type: 'update', data: currentData });
                 }
@@ -838,6 +867,7 @@
             if (pollInterval) clearInterval(pollInterval);
             if (syncManager) syncManager.unsubscribe();
             if (broadcastChannel) broadcastChannel.close();
+            if (supabaseChannel) { try { supabaseChannel.unsubscribe(); } catch(e){} }
         });
 
         // Silent Mode Functions

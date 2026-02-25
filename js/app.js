@@ -416,12 +416,29 @@ function saveToStorage() {
         };
         localStorage.setItem(`bidscreen_display_${activeDisplayId}`, JSON.stringify(displayData));
 
-        // Broadcast instantly to display tab on same device
+        // Same-device: BroadcastChannel (instant, same browser)
         try {
             const bc = new BroadcastChannel(`bidscreen_${activeDisplayId}`);
             bc.postMessage({ type: 'update', data: displayData });
             bc.close();
         } catch (e) { /* BroadcastChannel not supported */ }
+
+        // Cross-device: Supabase Realtime Broadcast (WebSocket, any device)
+        try {
+            const sb = typeof SupabaseClient !== 'undefined' && SupabaseClient.get();
+            if (sb) {
+                // Reuse persistent channel, create if first save
+                if (!window._appSupabaseChannel || window._appSupabaseChannelId !== activeDisplayId) {
+                    window._appSupabaseChannelId = activeDisplayId;
+                    window._appSupabaseChannel = sb.channel(`display:${activeDisplayId}`).subscribe();
+                }
+                window._appSupabaseChannel.send({
+                    type: 'broadcast',
+                    event: 'bid_update',
+                    payload: { data: displayData }
+                }).catch(() => {});
+            }
+        } catch(e) { /* ignore */ }
     }
 }
 
