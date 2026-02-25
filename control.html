@@ -496,54 +496,52 @@
             }
 
             try {
-                // Initialize storage adapter
                 await storage.initialize();
                 isPremiumMode = storage.getMode() === 'supabase';
 
-                // Load initial data
-                await loadDisplay();
-
-                // Update the limitation notice based on mode
+                // Set up Supabase channel first so it's ready before we might need it
+                setupSupabaseChannel();
                 updateLimitationNotice();
 
-                // Set up Supabase Broadcast channel for cross-device sync
-                setupSupabaseChannel();
+                const loaded = await loadDisplay();
 
-                // Use real-time sync for premium users
+                if (!loaded) {
+                    // Data not found locally — try to get state from the display screen
+                    // via Supabase Broadcast (works cross-device, no login required)
+                    requestStateFromDisplay();
+                    return;
+                }
+
                 if (isPremiumMode) {
-                    console.log('Premium mode: Using real-time sync');
-
                     syncManager = new SyncManager(displayId);
                     syncManager.subscribe((updatedData) => {
-                        console.log('Real-time update received in control panel');
                         currentData = updatedData;
                         renderControl(currentData);
                     });
                 } else {
-                    console.log('Free mode: Using localStorage polling');
-
-                    // Free tier: Poll for updates every 2 seconds
                     pollInterval = setInterval(loadDisplay, 2000);
                 }
             } catch (error) {
                 console.error('Error initializing control panel:', error);
-                showError('Error loading control panel');
+                // Try broadcast fallback on any error
+                setupSupabaseChannel();
+                requestStateFromDisplay();
             }
         }
 
-        // Load display data
+        // Load display data — returns true if data was found, false otherwise
         async function loadDisplay() {
             try {
                 const data = await storage.loadEvent(displayId);
                 if (data) {
                     currentData = data;
                     renderControl(currentData);
-                } else {
-                    showError('Display not found');
+                    return true;
                 }
+                return false;
             } catch (e) {
                 console.error('Error loading display:', e);
-                showError('Error loading display');
+                return false;
             }
         }
 
@@ -732,15 +730,24 @@
             console.log('BroadcastChannel not supported, using storage events only');
         }
 
-        // Supabase Realtime Broadcast channel — cross-device real-time sync
-        // Subscribe once; reuse the channel for all sends
+        // Supabase Realtime Broadcast — cross-device real-time sync
+        // Single persistent channel reused for all sends and receives
         let supabaseChannel = null;
+
         function setupSupabaseChannel() {
             try {
                 const sb = SupabaseClient && SupabaseClient.get();
-                if (sb && !supabaseChannel) {
-                    supabaseChannel = sb.channel(`display:${displayId}`).subscribe();
-                }
+                if (!sb || supabaseChannel) return;
+
+                supabaseChannel = sb.channel(`display:${displayId}`)
+                    // Display responded to our get_state request
+                    .on('broadcast', { event: 'state_response' }, ({ payload }) => {
+                        if (payload?.data && !currentData) {
+                            currentData = payload.data;
+                            renderControl(currentData);
+                        }
+                    })
+                    .subscribe();
             } catch(e) { console.log('Supabase channel setup failed:', e.message); }
         }
 
@@ -752,32 +759,65 @@
                     event: 'bid_update',
                     payload: { data }
                 });
-            } catch(e) { /* ignore send errors */ }
+            } catch(e) { /* ignore */ }
+        }
+
+        // Ask the display screen for its current state (for mobile remote control mode)
+        async function requestStateFromDisplay() {
+            document.getElementById('app').innerHTML = `
+                <div class="loading" style="flex-direction: column; gap: 12px;">
+                    <div class="loading-spinner"></div>
+                    <p style="color: #475569; font-weight: 600;">Connecting to display...</p>
+                    <p style="color: #94a3b8; font-size: 0.8rem; text-align: center;">Make sure the display screen is open on another device</p>
+                </div>`;
+
+            // Wait up to 1.5s for Supabase subscription to be ready, then send request
+            await new Promise(r => setTimeout(r, 1500));
+
+            if (supabaseChannel) {
+                try {
+                    await supabaseChannel.send({ type: 'broadcast', event: 'get_state', payload: {} });
+                } catch(e) {}
+            }
+
+            // If no response from display within 8s, show helpful error
+            setTimeout(() => {
+                if (!currentData) {
+                    document.getElementById('app').innerHTML = `
+                        <div style="padding: 40px 24px; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 16px;">📺</div>
+                            <h2 style="color: #1e293b; margin-bottom: 8px;">Display Not Connected</h2>
+                            <p style="color: #64748b; margin-bottom: 8px;">
+                                The display screen is not open or not responding.
+                            </p>
+                            <p style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 24px;">
+                                Open the display link on your TV or screen first, then retry here.
+                            </p>
+                            <button onclick="location.reload()" style="padding: 14px 28px; background: #6366f1; color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer;">
+                                Retry Connection
+                            </button>
+                        </div>`;
+                }
+            }, 8000);
         }
 
         // Save display
         async function saveDisplay() {
+            // Try to save locally (may not have access in remote-control mode — that's OK)
             try {
                 await storage.saveEvent(displayId, currentData);
-
-                // Layer 1: Supabase Broadcast — cross-device real-time
-                broadcastViaSupabase(currentData);
-
-                // Layer 2: BroadcastChannel — instant same-browser update
-                if (broadcastChannel) {
-                    broadcastChannel.postMessage({ type: 'update', data: currentData });
-                }
-
-                renderControl(currentData);
-
-                // Show brief success indicator for premium users
-                if (isPremiumMode) {
-                    showSaveIndicator();
-                }
             } catch (error) {
-                console.error('Error saving display:', error);
-                alert('Error saving changes. Please try again.');
+                console.warn('Local save failed (remote-control mode) — broadcasting only');
             }
+
+            // Always broadcast to display via all channels
+            broadcastViaSupabase(currentData);
+            if (broadcastChannel) {
+                broadcastChannel.postMessage({ type: 'update', data: currentData });
+            }
+
+            renderControl(currentData);
+            showSaveIndicator('✓ Sent to display');
         }
 
         // Show save indicator

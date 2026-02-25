@@ -182,9 +182,9 @@ async function launchDisplay() {
         // Remember this display ID so future edits keep the display in sync
         localStorage.setItem('bidscreen_active_display_id', displayId);
 
-        // Create display URL
-        const displayUrl = `${window.location.origin}/display.html?id=${displayId}`;
-        const controlUrl = `${window.location.origin}/control.html?id=${displayId}`;
+        // Create display URL (clean URLs — no .html extension)
+        const displayUrl = `${window.location.origin}/display?id=${displayId}`;
+        const controlUrl = `${window.location.origin}/control?id=${displayId}`;
 
         // Show modal with links
         const modal = document.createElement('div');

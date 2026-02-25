@@ -400,12 +400,21 @@
                 if (sb) {
                     window._supabaseDisplayChannel = sb
                         .channel(`display:${displayId}`)
+                        // Full data update from control panel
                         .on('broadcast', { event: 'bid_update' }, ({ payload }) => {
                             if (payload?.data) {
-                                // Also persist locally so poll stays in sync
                                 try { localStorage.setItem(storageKey, JSON.stringify(payload.data)); } catch(e){}
                                 applyUpdate(payload.data);
                             }
+                        })
+                        // Mobile control asking: "what's the current state?"
+                        .on('broadcast', { event: 'get_state' }, () => {
+                            if (!currentData || !window._supabaseDisplayChannel) return;
+                            window._supabaseDisplayChannel.send({
+                                type: 'broadcast',
+                                event: 'state_response',
+                                payload: { data: currentData }
+                            }).catch(() => {});
                         })
                         .subscribe();
                 }
