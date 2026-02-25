@@ -596,7 +596,7 @@
                         ${data.items.map((item, index) => `
                             <div class="item">
                                 <div class="item-header">
-                                    <div class="item-rank">#${index + 1}</div>
+                                    <div class="item-rank" title="Press ${index + 1} to edit">#${index + 1}</div>
                                     <div class="item-info">
                                         <div class="item-name">${escapeHtml(item.name)}</div>
                                         <div class="item-description">${escapeHtml(item.description) || 'No description'}</div>
@@ -886,6 +886,27 @@
 
         document.getElementById('addModal').addEventListener('click', function(e) {
             if (e.target === this) closeAddModal();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Skip when typing inside an input or textarea
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+            // Esc — close open modal
+            if (e.key === 'Escape') {
+                closeEditModal();
+                closeAddModal();
+                return;
+            }
+
+            // 1–9 — instantly open bid editor for that ranked item
+            const rank = parseInt(e.key);
+            if (rank >= 1 && rank <= 9 && currentData?.items?.length >= rank) {
+                e.preventDefault();
+                editBid(currentData.items[rank - 1].id);
+            }
         });
 
         // Pause polling when page is hidden
