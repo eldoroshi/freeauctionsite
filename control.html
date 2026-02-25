@@ -607,7 +607,7 @@
                                     </div>
                                 </div>
                                 <div class="item-actions">
-                                    <button class="btn btn-primary" onclick="editBid(${item.id})">✏️ Update Bid</button>
+                                    <button id="editBtn${index + 1}" class="btn btn-primary" onclick="editBid(${item.id})">✏️ Update Bid</button>
                                     <button class="btn btn-danger" onclick="deleteItem(${item.id})">🗑️</button>
                                 </div>
                             </div>
@@ -888,11 +888,11 @@
             if (e.target === this) closeAddModal();
         });
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Skip when an input/textarea/select is focused
-            const active = document.activeElement?.tagName;
-            if (active === 'INPUT' || active === 'TEXTAREA' || active === 'SELECT') return;
+        // Keyboard shortcuts — window-level listener for maximum reliability
+        window.addEventListener('keydown', (e) => {
+            // Skip when typing in a form field
+            const tag = (document.activeElement || {}).tagName || '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
             if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
 
             // Esc — close open modal
@@ -902,12 +902,12 @@
                 return;
             }
 
-            // 1–9 — click the "Update Bid" button for that ranked item directly
+            // 1–9 — open bid editor for that ranked item via direct button ID
             const rank = parseInt(e.key);
             if (!isNaN(rank) && rank >= 1 && rank <= 9) {
                 e.preventDefault();
-                const editBtns = document.querySelectorAll('#app .btn-primary');
-                if (editBtns[rank - 1]) editBtns[rank - 1].click();
+                const btn = document.getElementById('editBtn' + rank);
+                if (btn) btn.click();
             }
         });
 
