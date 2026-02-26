@@ -212,7 +212,7 @@ async function launchDisplay() {
                             <input type="text" value="${controlUrl}" readonly style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
                             <button onclick="copyToClipboard('${controlUrl}')" style="padding: 12px 16px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer;">Copy</button>
                         </div>
-                        ${!isPremium ? '<p style="color: #f59e0b; font-size: 0.875rem; margin-top: 8px;">⚠️ Free plan: Control panel must be on the same device as display</p>' : ''}
+
                     </div>
 
                     <div style="display: flex; gap: 12px;">
