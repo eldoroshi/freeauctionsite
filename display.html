@@ -417,25 +417,23 @@
                             }).catch(() => {});
                         })
                         // Public bid from a registered bidder's phone
+                        // (The bid page's RPC already updated bidding_sessions;
+                        //  this handler keeps the local display in sync too.)
                         .on('broadcast', { event: 'public_bid' }, ({ payload }) => {
                             if (!payload || !currentData) return;
-                            const { itemId, amount, bidderName } = payload;
+                            const { itemId, amount } = payload;
                             if (!itemId || !amount) return;
                             const item = currentData.items.find(i => String(i.id) === String(itemId));
                             if (!item || amount <= (item.currentBid || 0)) return;
 
-                            // Update the item's current bid
                             item.currentBid = amount;
                             currentData.items.sort((a, b) => (b.currentBid || 0) - (a.currentBid || 0));
                             currentData.updatedAt = new Date().toISOString();
 
-                            // Persist to localStorage
                             try { localStorage.setItem(`bidscreen_display_${displayId}`, JSON.stringify(currentData)); } catch(e) {}
 
-                            // Re-render the display
                             renderDisplay(currentData);
 
-                            // Broadcast updated state so control panels and other bid pages refresh
                             window._supabaseDisplayChannel.send({
                                 type: 'broadcast',
                                 event: 'bid_update',

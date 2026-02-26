@@ -935,6 +935,26 @@
             activeBidderEventId = eventId;
             activeBidderEventName = eventName;
 
+            // Push current auction data to bidding_sessions so the bid page
+            // can load items without the display screen being open.
+            try {
+                const sb = SupabaseClient.get && SupabaseClient.get();
+                const raw = localStorage.getItem(`bidscreen_display_${eventId}`);
+                if (sb && raw) {
+                    const displayData = JSON.parse(raw);
+                    await sb.from('bidding_sessions').upsert({
+                        display_id:     eventId,
+                        event_name:     displayData.event?.name || eventName,
+                        event_subtitle: displayData.event?.subtitle || '',
+                        items:          displayData.items || [],
+                        is_active:      true,
+                        updated_at:     new Date().toISOString()
+                    }, { onConflict: 'display_id' });
+                }
+            } catch (e) {
+                console.log('Could not sync bidding session:', e.message);
+            }
+
             const modal = document.createElement('div');
             modal.id = 'bidderModal';
             modal.className = 'modal-overlay';
