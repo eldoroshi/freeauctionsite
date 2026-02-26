@@ -1047,3 +1047,170 @@ h3 { font-size: 1.25rem; }
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.875rem;
 }
+
+/* ── Public Bidding Section ───────────────────────────────────────────────── */
+.public-bidding-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+}
+
+.public-bidding-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.section-tag {
+    display: inline-block;
+    background: #6366f1;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+}
+
+.public-bidding-text h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+.public-bidding-text > p {
+    color: #64748b;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+.bidding-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.bidding-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: #334155;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.step-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    background: #6366f1;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Phone mockup */
+.public-bidding-preview {
+    display: flex;
+    justify-content: center;
+}
+
+.phone-mockup {
+    background: #1e293b;
+    border-radius: 36px;
+    padding: 16px;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.25);
+    width: 280px;
+}
+
+.phone-screen {
+    background: #f8fafc;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.phone-header {
+    background: #6366f1;
+    color: white;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 12px 16px;
+}
+
+.phone-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.phone-item:last-child { border-bottom: none; }
+
+.phone-item-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.phone-item-bid {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.phone-item-bid strong { color: #10b981; }
+
+.phone-item-min {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.phone-bid-row {
+    display: flex;
+    gap: 6px;
+}
+
+.phone-bid-input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    background: white;
+}
+
+.phone-bid-btn {
+    padding: 6px 14px;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: default;
+}
+
+@media (max-width: 768px) {
+    .public-bidding-inner {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    .public-bidding-preview { order: -1; }
+    .phone-mockup { width: 260px; }
+}
