@@ -930,30 +930,78 @@
             return code;
         }
 
+        // Gather items from localStorage for a given eventId.
+        // Tries the display-specific key first; falls back to the standalone
+        // bidscreen_items key (used when the display key is missing or empty).
+        function getLocalItems(eventId) {
+            let items = [], evtName = '', evtSubtitle = '';
+
+            const displayRaw = localStorage.getItem(`bidscreen_display_${eventId}`);
+            if (displayRaw) {
+                const d = JSON.parse(displayRaw);
+                items       = d.items || [];
+                evtName     = d.event?.name || '';
+                evtSubtitle = d.event?.subtitle || '';
+            }
+
+            // Fallback: use the standalone keys if the display key had no items
+            if (items.length === 0) {
+                const itemsRaw = localStorage.getItem('bidscreen_items');
+                const evtRaw   = localStorage.getItem('bidscreen_event');
+                // Only use standalone items if they belong to this event
+                // (check via active display ID pointer)
+                const activeId = localStorage.getItem('bidscreen_active_display_id');
+                if (itemsRaw && (!activeId || activeId === eventId)) {
+                    items = JSON.parse(itemsRaw) || [];
+                }
+                if (evtRaw && !evtName) {
+                    const ev = JSON.parse(evtRaw);
+                    evtName     = ev.name || '';
+                    evtSubtitle = ev.subtitle || '';
+                }
+            }
+
+            return { items, evtName, evtSubtitle };
+        }
+
+        async function syncBiddingSession(eventId, statusElId) {
+            const eventName = eventNameMap[eventId] || eventId;
+            const statusEl  = statusElId ? document.getElementById(statusElId) : null;
+
+            if (statusEl) { statusEl.textContent = 'Syncing…'; statusEl.style.color = '#94a3b8'; }
+
+            try {
+                const sb = SupabaseClient.get && SupabaseClient.get();
+                if (!sb) throw new Error('Not connected to Supabase');
+
+                const { items, evtName, evtSubtitle } = getLocalItems(eventId);
+
+                await sb.from('bidding_sessions').upsert({
+                    display_id:     eventId,
+                    event_name:     evtName || eventName,
+                    event_subtitle: evtSubtitle,
+                    items:          items,
+                    is_active:      true,
+                    updated_at:     new Date().toISOString()
+                }, { onConflict: 'display_id' });
+
+                if (statusEl) {
+                    statusEl.textContent = `✓ ${items.length} item${items.length === 1 ? '' : 's'} synced`;
+                    statusEl.style.color = '#15803d';
+                }
+                return items.length;
+
+            } catch (e) {
+                console.log('Sync failed:', e.message);
+                if (statusEl) { statusEl.textContent = '⚠ Sync failed: ' + e.message; statusEl.style.color = '#dc2626'; }
+                return 0;
+            }
+        }
+
         async function openBidderModal(eventId) {
             const eventName = eventNameMap[eventId] || eventId;
             activeBidderEventId = eventId;
             activeBidderEventName = eventName;
-
-            // Push current auction data to bidding_sessions so the bid page
-            // can load items without the display screen being open.
-            try {
-                const sb = SupabaseClient.get && SupabaseClient.get();
-                const raw = localStorage.getItem(`bidscreen_display_${eventId}`);
-                if (sb && raw) {
-                    const displayData = JSON.parse(raw);
-                    await sb.from('bidding_sessions').upsert({
-                        display_id:     eventId,
-                        event_name:     displayData.event?.name || eventName,
-                        event_subtitle: displayData.event?.subtitle || '',
-                        items:          displayData.items || [],
-                        is_active:      true,
-                        updated_at:     new Date().toISOString()
-                    }, { onConflict: 'display_id' });
-                }
-            } catch (e) {
-                console.log('Could not sync bidding session:', e.message);
-            }
 
             const modal = document.createElement('div');
             modal.id = 'bidderModal';
@@ -965,6 +1013,20 @@
                         <button class="modal-close" onclick="closeBidderModal()">✕</button>
                     </div>
                     <div class="modal-body">
+
+                        <div class="modal-section" style="background:#f8fafc; border-radius:10px; padding:16px; border:1px solid #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                                <div>
+                                    <div style="font-weight:700; color:#1e293b; font-size:0.9rem;">📡 Bidding Session</div>
+                                    <div id="syncStatus" style="font-size:0.8rem; color:#94a3b8; margin-top:2px;">Syncing items…</div>
+                                </div>
+                                <button onclick="syncBiddingSession('${eventId}', 'syncStatus')"
+                                    style="padding:8px 16px; background:white; border:1px solid #e2e8f0; border-radius:8px; font-weight:600; font-size:0.8rem; cursor:pointer; white-space:nowrap;">
+                                    ↻ Sync Items
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="modal-section">
                             <h3>Register New Bidder</h3>
                             <div id="bidderFormError" class="modal-error"></div>
@@ -1006,8 +1068,9 @@
                 if (e.target === modal) closeBidderModal();
             });
 
-            // Load data
+            // Sync items to Supabase and load modal data in parallel
             await Promise.all([
+                syncBiddingSession(eventId, 'syncStatus'),
                 loadBidderList(eventId),
                 loadBidHistory(eventId)
             ]);
