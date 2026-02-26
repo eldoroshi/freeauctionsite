@@ -218,6 +218,16 @@
             background: #dcfce7;
         }
 
+        .btn-delete {
+            background: #fff1f2;
+            color: #be123c;
+            border: 1px solid #fecdd3;
+        }
+
+        .btn-delete:hover {
+            background: #ffe4e6;
+        }
+
         /* Bidder Modal */
         .modal-overlay {
             position: fixed;
@@ -672,6 +682,7 @@
                                 <a href="../display.html?id=${event.id}" target="_blank" class="btn btn-primary">Open Display</a>
                                 <a href="../control.html?id=${event.id}" class="btn btn-secondary">Control Panel</a>
                                 <button onclick="openBidderModal('${event.id}')" class="btn btn-bidders">👥 Manage Bidders</button>
+                                <button onclick="deleteEvent('${event.id}')" class="btn btn-delete">🗑 Delete</button>
                             </div>
                         </div>
                     `;
@@ -1182,6 +1193,32 @@
             }).catch(() => {
                 prompt('Copy this bidder link:', url);
             });
+        }
+
+        // ── Delete Event ────────────────────────────────────────────────────────
+
+        async function deleteEvent(eventId) {
+            const name = eventNameMap[eventId] || 'this event';
+            if (!confirm(`Delete "${name}"?\n\nThis will remove it from your dashboard. This cannot be undone.`)) return;
+
+            // Remove from localStorage
+            localStorage.removeItem(`bidscreen_display_${eventId}`);
+            // Clear active display pointer if it matches
+            if (localStorage.getItem('bidscreen_active_display_id') === eventId) {
+                localStorage.removeItem('bidscreen_active_display_id');
+            }
+
+            // Try to remove from Supabase too
+            try {
+                const sb = SupabaseClient.get && SupabaseClient.get();
+                if (sb) {
+                    await storage.deleteEvent(eventId);
+                }
+            } catch (e) { /* cloud delete is best-effort */ }
+
+            // Remove the card from the DOM immediately (no full reload needed)
+            delete eventNameMap[eventId];
+            await loadEvents();
         }
 
         // Load dashboard on page load
