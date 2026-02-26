@@ -340,6 +340,58 @@
             10%, 80% { opacity: 1; }
         }
 
+        /* ── Light Theme ─────────────────────────────────────────────────── */
+        body.light-theme {
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+        }
+        body.light-theme .header h1 { color: #1e293b; }
+        body.light-theme .header p  { color: #64748b; }
+
+        body.light-theme .item {
+            background: white;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+            border: 1px solid #e2e8f0;
+            backdrop-filter: none;
+        }
+        body.light-theme .item.highlight { animation: pulseLight 2s ease-in-out; }
+        @keyframes pulseLight {
+            0%, 100% { background: white; }
+            50%       { background: #eef2ff; }
+        }
+        body.light-theme .rank                   { color: #6366f1; }
+        body.light-theme .item:nth-child(1) .rank { color: #d97706; }
+        body.light-theme .item:nth-child(2) .rank { color: #64748b; }
+        body.light-theme .item:nth-child(3) .rank { color: #b45309; }
+        body.light-theme .item-image { background: #f1f5f9; }
+        body.light-theme .info h3    { color: #1e293b; }
+        body.light-theme .info p     { color: #64748b; }
+        body.light-theme .bid-label  { color: #94a3b8; }
+
+        body.light-theme .footer     { border-top: 1px solid #e2e8f0; }
+        body.light-theme .total      { color: #1e293b; }
+        body.light-theme .stats      { color: #64748b; }
+        body.light-theme .powered    { color: #94a3b8; }
+        body.light-theme .powered a  { color: #6366f1; }
+
+        body.light-theme .spotlight-card {
+            background: white;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.1);
+            backdrop-filter: none;
+        }
+        body.light-theme .spotlight-rank  { color: #d97706; }
+        body.light-theme .spotlight-name  { color: #1e293b; }
+        body.light-theme .spotlight-desc  { color: #64748b; }
+        body.light-theme .spotlight-label { color: #94a3b8; }
+        body.light-theme .spotlight-dot   { background: rgba(0,0,0,0.15); }
+        body.light-theme .spotlight-dot.active { background: #6366f1; }
+
+        body.light-theme .carousel-progress { background: #e2e8f0; }
+
+        body.light-theme .empty   { color: #64748b; }
+        body.light-theme .empty h2 { color: #1e293b; }
+
+        body.light-theme .timer-label { color: #94a3b8; }
+
         /* Countdown Timer */
         .auction-countdown {
             display: flex;
@@ -404,6 +456,11 @@
         let carouselProgressInterval = null;
         let countdownInterval = null;
         const CAROUSEL_DURATION = 6000; // ms per item
+
+        // ── Theme ─────────────────────────────────────────────────────────
+        function applyTheme(data) {
+            document.body.classList.toggle('light-theme', data.event?.theme === 'light');
+        }
 
         // ── Countdown ticker — updates #auctionCountdown every second ──────
         function startCountdownTicker(endsAt) {
@@ -645,6 +702,7 @@
         
         // Render display — branches on displayMode
         function renderDisplay(data) {
+            applyTheme(data);
             const mode = data.event?.displayMode || 'leaderboard';
             if (mode === 'spotlight') {
                 renderSpotlight(data);

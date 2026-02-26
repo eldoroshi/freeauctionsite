@@ -431,6 +431,18 @@
 
     <button class="btn-add" onclick="openAddModal()">+</button>
 
+    <!-- Theme Toggle (Premium) -->
+    <div id="themeControls" style="display: none; position: fixed; bottom: 580px; right: 20px; z-index: 100; flex-direction: column; align-items: center; gap: 4px;">
+        <span style="color: #64748b; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Theme</span>
+        <button id="themeBtn" onclick="toggleTheme()" style="
+            width: 60px; height: 60px; border-radius: 50%;
+            background: #f59e0b; color: white; border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(245,158,11,0.4);
+            cursor: pointer; transition: all 0.2s;
+        " title="Switch to Light Theme">☀️</button>
+    </div>
+
     <!-- Timer Control (available to all users) -->
     <div style="position: fixed; bottom: 480px; right: 20px; z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 4px;">
         <span style="color: #64748b; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Timer</span>
@@ -1041,6 +1053,41 @@
         // Check silent mode feature on init
         setTimeout(checkSilentModeFeature, 1000);
 
+        // ── Theme Functions (Premium) ─────────────────────────────────────
+        async function checkThemeFeature() {
+            if (isPremiumMode) {
+                const el = document.getElementById('themeControls');
+                el.style.display = 'flex';
+                updateThemeBtn(currentData?.event?.theme || 'dark');
+            }
+        }
+
+        async function toggleTheme() {
+            if (!currentData) return;
+            if (!currentData.event) currentData.event = {};
+            const newTheme = (currentData.event.theme === 'light') ? 'dark' : 'light';
+            currentData.event.theme = newTheme;
+            await saveDisplay();
+            updateThemeBtn(newTheme);
+            showSaveIndicator(newTheme === 'light' ? '☀️ Light theme' : '🌙 Dark theme');
+        }
+
+        function updateThemeBtn(theme) {
+            const btn = document.getElementById('themeBtn');
+            if (!btn) return;
+            if (theme === 'light') {
+                btn.textContent = '🌙';
+                btn.title       = 'Switch to Dark Theme';
+                btn.style.background    = '#6366f1';
+                btn.style.boxShadow     = '0 4px 12px rgba(99,102,241,0.4)';
+            } else {
+                btn.textContent = '☀️';
+                btn.title       = 'Switch to Light Theme';
+                btn.style.background    = '#f59e0b';
+                btn.style.boxShadow     = '0 4px 12px rgba(245,158,11,0.4)';
+            }
+        }
+
         // ── Timer Functions ───────────────────────────────────────────────
         function openTimerModal() {
             const endsAt = currentData?.event?.auctionEndsAt;
@@ -1138,6 +1185,7 @@
         }
 
         setTimeout(checkDisplayModeFeature, 1100);
+        setTimeout(checkThemeFeature, 1150);
 
         // Reflect existing timer state on the button after data loads
         setTimeout(() => updateTimerBtn(!!currentData?.event?.auctionEndsAt), 1200);
