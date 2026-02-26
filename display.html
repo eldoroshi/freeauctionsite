@@ -416,6 +416,32 @@
                                 payload: { data: currentData }
                             }).catch(() => {});
                         })
+                        // Public bid from a registered bidder's phone
+                        .on('broadcast', { event: 'public_bid' }, ({ payload }) => {
+                            if (!payload || !currentData) return;
+                            const { itemId, amount, bidderName } = payload;
+                            if (!itemId || !amount) return;
+                            const item = currentData.items.find(i => String(i.id) === String(itemId));
+                            if (!item || amount <= (item.currentBid || 0)) return;
+
+                            // Update the item's current bid
+                            item.currentBid = amount;
+                            currentData.items.sort((a, b) => (b.currentBid || 0) - (a.currentBid || 0));
+                            currentData.updatedAt = new Date().toISOString();
+
+                            // Persist to localStorage
+                            try { localStorage.setItem(`bidscreen_display_${displayId}`, JSON.stringify(currentData)); } catch(e) {}
+
+                            // Re-render the display
+                            renderDisplay(currentData);
+
+                            // Broadcast updated state so control panels and other bid pages refresh
+                            window._supabaseDisplayChannel.send({
+                                type: 'broadcast',
+                                event: 'bid_update',
+                                payload: { data: currentData }
+                            }).catch(() => {});
+                        })
                         .subscribe();
                 }
             } catch(e) { console.log('Supabase Broadcast unavailable:', e.message); }

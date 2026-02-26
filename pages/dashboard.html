@@ -207,6 +207,247 @@
             font-weight: 600;
             cursor: pointer;
         }
+
+        .btn-bidders {
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .btn-bidders:hover {
+            background: #dcfce7;
+        }
+
+        /* Bidder Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 16px;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 680px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 28px;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            background: #f1f5f9;
+            border: none;
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+        }
+
+        .modal-close:hover { background: #e2e8f0; }
+
+        .modal-body {
+            padding: 24px 28px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-section {
+            margin-bottom: 28px;
+        }
+
+        .modal-section h3 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .add-bidder-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .form-field {
+            flex: 1;
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .form-field input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-field input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .btn-add {
+            padding: 10px 20px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-add:hover { background: #4f46e5; }
+
+        .bidder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bidder-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .bidder-name {
+            flex: 1;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .bidder-email {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .bidder-code {
+            background: #1e293b;
+            color: #10b981;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .btn-copy-link {
+            padding: 6px 14px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        .btn-copy-link:hover { background: #e2e8f0; }
+
+        .btn-delete-bidder {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #ef4444;
+            font-size: 1rem;
+            padding: 4px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .bid-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .bid-history-table th {
+            text-align: left;
+            padding: 8px 12px;
+            color: #64748b;
+            font-weight: 600;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .bid-history-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+
+        .bid-history-table tr:last-child td { border-bottom: none; }
+
+        .bid-amount-cell {
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .modal-empty {
+            text-align: center;
+            color: #94a3b8;
+            padding: 24px;
+            font-size: 0.9rem;
+        }
+
+        .modal-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .bid-link-hint {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -381,6 +622,7 @@
                         <div class="event-actions">
                             <a href="../display.html?id=${event.id}" target="_blank" class="btn btn-primary">Open Display</a>
                             <a href="../control.html?id=${event.id}" class="btn btn-secondary">Control Panel</a>
+                            <button onclick="openBidderModal('${event.id}', '${escapeHtml(event.event?.name || event.name || 'Untitled Event').replace(/'/g, "\\'")}')" class="btn btn-bidders">👥 Manage Bidders</button>
                         </div>
                     </div>
                 `).join('');
@@ -417,6 +659,285 @@
             if (diffHours < 24) return `${diffHours}h ago`;
             if (diffDays < 7) return `${diffDays}d ago`;
             return date.toLocaleDateString();
+        }
+
+        // ── Bidder Management ────────────────────────────────────────────────────
+
+        let activeBidderEventId = null;
+        let activeBidderEventName = null;
+
+        function generateAccessCode() {
+            // Uppercase letters + digits, excluding ambiguous chars (O, 0, I, 1)
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return code;
+        }
+
+        async function openBidderModal(eventId, eventName) {
+            activeBidderEventId = eventId;
+            activeBidderEventName = eventName;
+
+            const modal = document.createElement('div');
+            modal.id = 'bidderModal';
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2>👥 Manage Bidders — ${escapeHtml(eventName)}</h2>
+                        <button class="modal-close" onclick="closeBidderModal()">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="modal-section">
+                            <h3>Register New Bidder</h3>
+                            <div id="bidderFormError" class="modal-error"></div>
+                            <div class="add-bidder-form">
+                                <div class="form-field">
+                                    <label>Name *</label>
+                                    <input type="text" id="newBidderName" placeholder="John Doe">
+                                </div>
+                                <div class="form-field">
+                                    <label>Email (optional)</label>
+                                    <input type="email" id="newBidderEmail" placeholder="john@example.com">
+                                </div>
+                                <button class="btn-add" onclick="addBidder()">+ Add</button>
+                            </div>
+                            <p class="bid-link-hint">Each bidder gets a unique 6-character code to access the bidding page.</p>
+                        </div>
+
+                        <div class="modal-section">
+                            <h3>Registered Bidders</h3>
+                            <div id="bidderList">
+                                <div class="modal-empty">Loading bidders...</div>
+                            </div>
+                        </div>
+
+                        <div class="modal-section">
+                            <h3>Recent Bids</h3>
+                            <div id="bidHistory">
+                                <div class="modal-empty">Loading bid history...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Close on backdrop click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeBidderModal();
+            });
+
+            // Load data
+            await Promise.all([
+                loadBidderList(eventId),
+                loadBidHistory(eventId)
+            ]);
+        }
+
+        function closeBidderModal() {
+            const modal = document.getElementById('bidderModal');
+            if (modal) modal.remove();
+            activeBidderEventId = null;
+        }
+
+        async function loadBidderList(eventId) {
+            try {
+                const sb = SupabaseClient.get();
+                if (!sb) throw new Error('Not connected');
+
+                const { data, error } = await sb
+                    .from('bidders')
+                    .select('*')
+                    .eq('display_id', eventId)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+
+                const container = document.getElementById('bidderList');
+                if (!container) return;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="modal-empty">No bidders registered yet. Add the first one above.</div>';
+                    return;
+                }
+
+                const origin = window.location.origin;
+                // bid.html is in /pages/, so URL is /pages/bid with cleanUrls
+                const bidBase = `${origin}/pages/bid`;
+                container.innerHTML = `
+                    <div class="bidder-list">
+                        ${data.map(b => `
+                            <div class="bidder-row" id="bidder_${b.id}">
+                                <div style="flex:1">
+                                    <div class="bidder-name">${escapeHtml(b.name)}</div>
+                                    ${b.email ? `<div class="bidder-email">${escapeHtml(b.email)}</div>` : ''}
+                                </div>
+                                <span class="bidder-code">${escapeHtml(b.access_code)}</span>
+                                <button class="btn-copy-link" onclick="copyBidderLink('${bidBase}?id=${eventId}&code=${b.access_code}')">📋 Copy Link</button>
+                                <button class="btn-delete-bidder" onclick="deleteBidder('${b.id}')" title="Remove bidder">✕</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (err) {
+                const container = document.getElementById('bidderList');
+                if (container) container.innerHTML = `<div class="modal-empty" style="color:#ef4444">${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        async function addBidder() {
+            const name = (document.getElementById('newBidderName')?.value || '').trim();
+            const email = (document.getElementById('newBidderEmail')?.value || '').trim();
+            const errEl = document.getElementById('bidderFormError');
+
+            if (!name) {
+                if (errEl) { errEl.textContent = 'Please enter the bidder\'s name.'; errEl.style.display = 'block'; }
+                return;
+            }
+
+            if (errEl) errEl.style.display = 'none';
+
+            const btn = document.querySelector('.btn-add');
+            if (btn) { btn.disabled = true; btn.textContent = 'Adding...'; }
+
+            try {
+                const sb = SupabaseClient.get();
+                if (!sb) throw new Error('Not connected to database.');
+
+                // Generate a unique code (retry on collision)
+                let code, attempts = 0;
+                while (attempts < 10) {
+                    code = generateAccessCode();
+                    const { data: existing } = await sb
+                        .from('bidders')
+                        .select('id')
+                        .eq('display_id', activeBidderEventId)
+                        .eq('access_code', code)
+                        .maybeSingle();
+                    if (!existing) break;
+                    attempts++;
+                }
+
+                const { error } = await sb.from('bidders').insert({
+                    display_id: activeBidderEventId,
+                    name,
+                    email: email || null,
+                    access_code: code
+                });
+
+                if (error) throw error;
+
+                // Clear form
+                document.getElementById('newBidderName').value = '';
+                document.getElementById('newBidderEmail').value = '';
+
+                // Reload list
+                await loadBidderList(activeBidderEventId);
+
+            } catch (err) {
+                if (errEl) { errEl.textContent = err.message || 'Failed to add bidder.'; errEl.style.display = 'block'; }
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '+ Add'; }
+            }
+        }
+
+        async function deleteBidder(bidderId) {
+            if (!confirm('Remove this bidder? They will no longer be able to access the auction.')) return;
+
+            try {
+                const sb = SupabaseClient.get();
+                if (!sb) throw new Error('Not connected');
+
+                const { error } = await sb.from('bidders').delete().eq('id', bidderId);
+                if (error) throw error;
+
+                const row = document.getElementById(`bidder_${bidderId}`);
+                if (row) row.remove();
+
+                // Check if list is now empty
+                const list = document.querySelector('.bidder-list');
+                if (list && list.children.length === 0) {
+                    document.getElementById('bidderList').innerHTML =
+                        '<div class="modal-empty">No bidders registered yet. Add the first one above.</div>';
+                }
+
+            } catch (err) {
+                alert('Failed to remove bidder: ' + err.message);
+            }
+        }
+
+        async function loadBidHistory(eventId) {
+            try {
+                const sb = SupabaseClient.get();
+                if (!sb) throw new Error('Not connected');
+
+                const { data, error } = await sb
+                    .from('public_bids')
+                    .select('*')
+                    .eq('display_id', eventId)
+                    .order('placed_at', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+
+                const container = document.getElementById('bidHistory');
+                if (!container) return;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="modal-empty">No bids placed yet.</div>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <table class="bid-history-table">
+                        <thead>
+                            <tr>
+                                <th>Bidder</th>
+                                <th>Item</th>
+                                <th>Amount</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(b => `
+                                <tr>
+                                    <td>${escapeHtml(b.bidder_name)}</td>
+                                    <td>${escapeHtml(b.item_name)}</td>
+                                    <td class="bid-amount-cell">$${parseFloat(b.amount).toLocaleString()}</td>
+                                    <td style="color:#94a3b8">${formatDate(b.placed_at)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                const container = document.getElementById('bidHistory');
+                if (container) container.innerHTML = `<div class="modal-empty" style="color:#ef4444">${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        function copyBidderLink(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                // Brief feedback without alert
+                const el = event?.target;
+                if (el) {
+                    const original = el.textContent;
+                    el.textContent = '✓ Copied!';
+                    el.style.background = '#d1fae5';
+                    el.style.color = '#065f46';
+                    setTimeout(() => {
+                        el.textContent = original;
+                        el.style.background = '';
+                        el.style.color = '';
+                    }, 2000);
+                }
+            }).catch(() => {
+                prompt('Copy this bidder link:', url);
+            });
         }
 
         // Load dashboard on page load

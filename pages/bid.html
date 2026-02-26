@@ -10,7 +10,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -20,25 +20,130 @@
             margin: 0 auto;
         }
 
-        .header {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
+        /* Loading */
+        .loading {
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 80px 20px;
+            color: white;
         }
 
-        .header h1 {
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading p {
+            font-size: 1.125rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Code entry screen */
+        .code-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 32px;
+            margin-top: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .code-card .icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .code-card h1 {
             font-size: 1.75rem;
             color: #1e293b;
             margin-bottom: 8px;
         }
 
-        .header p {
+        .code-card p {
             color: #64748b;
+            margin-bottom: 32px;
         }
 
+        .code-input-wrap {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        #codeInput {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: #1e293b;
+            transition: border-color 0.2s;
+        }
+
+        #codeInput:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .btn-join {
+            padding: 16px 28px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-join:hover { background: #4f46e5; transform: translateY(-1px); }
+        .btn-join:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
+
+        /* Header card */
+        .header-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .header-card h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .header-card .subtitle {
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .header-card .bidder-info {
+            display: inline-block;
+            background: #f0fdf4;
+            color: #15803d;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        /* Item card */
         .item-card {
             background: white;
             border-radius: 16px;
@@ -48,20 +153,18 @@
             transition: transform 0.2s;
         }
 
-        .item-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-        }
+        .item-card:hover { transform: translateY(-2px); }
 
         .item-header {
             display: flex;
             justify-content: space-between;
-            align-items: start;
-            margin-bottom: 16px;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 12px;
         }
 
         .item-name {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             font-weight: 700;
             color: #1e293b;
             flex: 1;
@@ -74,35 +177,44 @@
             border-radius: 8px;
             font-weight: 700;
             font-size: 0.875rem;
+            white-space: nowrap;
         }
 
         .item-description {
             color: #64748b;
+            font-size: 0.9rem;
             margin-bottom: 16px;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .bid-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px;
+            padding: 14px 16px;
             background: #f8fafc;
-            border-radius: 12px;
-            margin-bottom: 16px;
+            border-radius: 10px;
+            margin-bottom: 14px;
+        }
+
+        .bid-label {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
         }
 
         .current-bid {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 800;
             color: #10b981;
         }
 
-        .bid-label {
+        .starting-bid {
+            font-weight: 600;
             color: #64748b;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 1rem;
         }
 
         .bid-form {
@@ -112,20 +224,19 @@
 
         .bid-input {
             flex: 1;
-            padding: 14px;
+            padding: 14px 16px;
             border: 2px solid #e2e8f0;
             border-radius: 10px;
             font-size: 1.125rem;
             font-weight: 600;
+            color: #1e293b;
+            transition: border-color 0.2s;
         }
 
-        .bid-input:focus {
-            outline: none;
-            border-color: #6366f1;
-        }
+        .bid-input:focus { outline: none; border-color: #6366f1; }
 
         .bid-button {
-            padding: 14px 24px;
+            padding: 14px 22px;
             background: #6366f1;
             color: white;
             border: none;
@@ -136,279 +247,296 @@
             white-space: nowrap;
         }
 
-        .bid-button:hover {
-            background: #4f46e5;
-            transform: translateY(-2px);
+        .bid-button:hover { background: #4f46e5; transform: translateY(-1px); }
+        .bid-button:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
+
+        .item-msg {
+            margin-top: 10px;
         }
 
-        .bid-button:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .bidder-form {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .bidder-form h2 {
-            margin-bottom: 8px;
-            color: #1e293b;
-        }
-
-        .bidder-form p {
-            color: #64748b;
-            margin-bottom: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #1e293b;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #6366f1;
-        }
-
-        .submit-button {
-            width: 100%;
-            padding: 16px;
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 1.125rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .submit-button:hover {
-            background: #059669;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: white;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 24px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .error {
+        /* Messages */
+        .error-msg {
             background: #fee2e2;
             color: #991b1b;
-            padding: 16px;
-            border-radius: 10px;
-            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.875rem;
             border: 1px solid #fca5a5;
         }
 
-        .success {
+        .success-msg {
             background: #d1fae5;
             color: #065f46;
-            padding: 16px;
-            border-radius: 10px;
-            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.875rem;
             border: 1px solid #6ee7b7;
         }
 
-        .empty {
-            text-align: center;
-            color: white;
-            padding: 60px 20px;
+        .global-msg {
+            margin-bottom: 16px;
         }
 
-        .empty h2 {
-            margin-bottom: 16px;
+        /* Error screen */
+        .error-screen {
+            text-align: center;
+            padding: 80px 20px;
+            color: white;
+        }
+
+        .error-screen h2 {
+            font-size: 1.75rem;
+            margin-bottom: 12px;
+        }
+
+        .error-screen p {
+            color: rgba(255,255,255,0.8);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .btn-retry {
+            padding: 14px 28px;
+            background: white;
+            color: #1e293b;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .empty-items {
+            text-align: center;
+            color: #64748b;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 16px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="loadingState" class="loading">
+
+        <!-- Loading -->
+        <div id="loadingScreen" class="loading">
             <div class="spinner"></div>
-            <p>Loading auction...</p>
+            <p id="loadingMsg">Loading...</p>
         </div>
 
-        <div id="bidderFormContainer" style="display: none;">
-            <div class="bidder-form">
-                <h2>Welcome to the Auction!</h2>
-                <p>Enter your details to start bidding</p>
-                <form id="bidderForm">
-                    <div class="form-group">
-                        <label for="bidderName">Your Name *</label>
-                        <input type="text" id="bidderName" required placeholder="John Doe">
-                    </div>
-                    <div class="form-group">
-                        <label for="bidderEmail">Email Address *</label>
-                        <input type="email" id="bidderEmail" required placeholder="you@example.com">
-                    </div>
-                    <button type="submit" class="submit-button">Start Bidding</button>
-                </form>
+        <!-- Code Entry Screen -->
+        <div id="codeScreen" style="display:none;">
+            <div class="code-card">
+                <div class="icon">🎯</div>
+                <h1>Auction Bidding</h1>
+                <p>Enter the access code provided by your event organizer</p>
+                <div class="code-input-wrap">
+                    <input
+                        type="text"
+                        id="codeInput"
+                        maxlength="6"
+                        placeholder="ABC123"
+                        autocomplete="off"
+                        autocapitalize="characters"
+                    >
+                    <button class="btn-join" onclick="submitCode()">Join →</button>
+                </div>
+                <div id="codeError" style="display:none;" class="error-msg"></div>
             </div>
         </div>
 
-        <div id="auctionContent" style="display: none;">
-            <div class="header">
+        <!-- Auction Screen -->
+        <div id="auctionScreen" style="display:none;">
+            <div class="header-card">
                 <h1 id="eventName"></h1>
-                <p id="eventSubtitle"></p>
+                <p class="subtitle" id="eventSubtitle"></p>
+                <span class="bidder-info">✓ Bidding as <strong id="bidderNameDisplay"></strong></span>
             </div>
 
-            <div id="messageContainer"></div>
+            <div id="globalMsg" class="global-msg"></div>
             <div id="itemsList"></div>
         </div>
 
-        <div id="errorState" style="display: none;" class="empty">
-            <h2>⚠️ Auction Not Available</h2>
-            <p id="errorMessage">This auction is not accepting public bids.</p>
+        <!-- Error Screen -->
+        <div id="errorScreen" style="display:none;" class="error-screen">
+            <h2>⚠️ Unable to Connect</h2>
+            <p id="errorMsg"></p>
+            <button class="btn-retry" onclick="window.location.reload()">Try Again</button>
         </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
     <script src="../config/env.js"></script>
     <script src="../js/supabase-client.js"></script>
-    <script src="../js/storage-adapter.js"></script>
-    <script src="../js/auth.js"></script>
-    <script src="../js/branding.js"></script>
-    <script src="../js/sync-manager.js"></script>
-    <script src="../js/stripe-checkout.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const eventId = urlParams.get('event');
+        const displayId = urlParams.get('id');
+        const urlCode = urlParams.get('code');  // organizer can pre-fill code in link
 
-        let bidderInfo = null;
-        let eventData = null;
-        let syncManager = null;
+        let bidderInfo = null;   // { id, display_id, name, email, access_code }
+        let currentItems = [];
+        let eventInfo = {};
+        let channel = null;
 
+        // ── Init ────────────────────────────────────────────────────────────────
         async function init() {
-            if (!eventId) {
-                showError('No event ID provided');
+            if (!displayId) {
+                showError('No auction ID provided. Please use the link given to you by the organizer.');
                 return;
             }
 
-            // Check if bidder info is saved
-            const saved = localStorage.getItem(`bidder_${eventId}`);
+            // Restore session if bidder already validated this session
+            const saved = sessionStorage.getItem(`bidder_${displayId}`);
             if (saved) {
-                bidderInfo = JSON.parse(saved);
-                await loadAuction();
-            } else {
-                showBidderForm();
+                try { bidderInfo = JSON.parse(saved); } catch(e) {}
+                if (bidderInfo) { await connectToAuction(); return; }
             }
-        }
 
-        function showBidderForm() {
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('bidderFormContainer').style.display = 'block';
-        }
-
-        document.getElementById('bidderForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const name = document.getElementById('bidderName').value.trim();
-            const email = document.getElementById('bidderEmail').value.trim();
-
-            if (!name || !email) {
-                showMessage('Please enter your name and email', 'error');
+            // Code in URL → auto-validate
+            if (urlCode) {
+                await validateCode(urlCode);
                 return;
             }
 
-            bidderInfo = { name, email };
-            localStorage.setItem(`bidder_${eventId}`, JSON.stringify(bidderInfo));
+            showCodeScreen();
+        }
 
-            document.getElementById('bidderFormContainer').style.display = 'none';
-            document.getElementById('loadingState').style.display = 'block';
+        // ── Code Validation ──────────────────────────────────────────────────────
+        function submitCode() {
+            const raw = (document.getElementById('codeInput').value || '').trim().toUpperCase();
+            validateCode(raw);
+        }
 
-            await loadAuction();
-        });
+        async function validateCode(code) {
+            const cleaned = (code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-        async function loadAuction() {
+            if (cleaned.length !== 6) {
+                showCodeError('Please enter your 6-character access code.');
+                return;
+            }
+
+            showLoading('Validating code...');
+
             try {
                 const sb = SupabaseClient.get();
-                if (!sb) throw new Error('Public bidding not available');
+                if (!sb) throw new Error('Bidding service unavailable. Please try again later.');
 
-                // Load event data
-                const { data: event, error } = await sb
-                    .from('events')
-                    .select(`
-                        *,
-                        auction_items (*)
-                    `)
-                    .eq('id', eventId)
-                    .single();
+                const { data, error } = await sb
+                    .from('bidders')
+                    .select('*')
+                    .eq('display_id', displayId)
+                    .eq('access_code', cleaned)
+                    .maybeSingle();
 
                 if (error) throw error;
 
-                if (!event.allow_public_bidding || event.status !== 'active') {
-                    showError('This auction is not accepting public bids.');
+                if (!data) {
+                    hideLoading();
+                    showCodeError('Invalid access code. Please check the code given to you by the organizer.');
                     return;
                 }
 
-                eventData = event;
-                renderAuction();
+                bidderInfo = data;
+                sessionStorage.setItem(`bidder_${displayId}`, JSON.stringify(bidderInfo));
 
-                // Subscribe to real-time updates
-                syncManager = new SyncManager(eventId);
-                syncManager.subscribe((updatedData) => {
-                    eventData = updatedData;
-                    renderItems();
-                });
+                await connectToAuction();
 
-                document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('auctionContent').style.display = 'block';
-
-            } catch (error) {
-                console.error('Error loading auction:', error);
-                showError(error.message || 'Failed to load auction');
+            } catch (err) {
+                hideLoading();
+                showCodeError(err.message || 'Failed to validate code.');
             }
         }
 
-        function renderAuction() {
-            document.getElementById('eventName').textContent = eventData.name;
-            document.getElementById('eventSubtitle').textContent = eventData.subtitle || '';
+        // ── Connect to Auction ───────────────────────────────────────────────────
+        async function connectToAuction() {
+            showLoading('Connecting to auction...');
+
+            const sb = SupabaseClient.get();
+            if (!sb) {
+                showError('Bidding service unavailable.');
+                return;
+            }
+
+            return new Promise((resolve) => {
+                let resolved = false;
+                let timeout;
+
+                channel = sb.channel(`display:${displayId}`)
+                    // Display responds to our get_state request with current data
+                    .on('broadcast', { event: 'state_response' }, ({ payload }) => {
+                        if (resolved || !payload?.data) return;
+                        resolved = true;
+                        clearTimeout(timeout);
+                        applyData(payload.data);
+                        resolve();
+                    })
+                    // Live bid updates from control panel or other bidders
+                    .on('broadcast', { event: 'bid_update' }, ({ payload }) => {
+                        if (payload?.data) applyData(payload.data);
+                    })
+                    .subscribe((status) => {
+                        if (status === 'SUBSCRIBED') {
+                            // Ask display for current state
+                            setTimeout(() => {
+                                channel.send({
+                                    type: 'broadcast',
+                                    event: 'get_state',
+                                    payload: {}
+                                }).catch(() => {});
+                            }, 400);
+                        }
+                    });
+
+                // If display doesn't respond in 10 seconds, show error
+                timeout = setTimeout(() => {
+                    if (!resolved) {
+                        resolved = true;
+                        showError(
+                            'Could not load auction items. Please make sure the auction display screen is open, then refresh this page.'
+                        );
+                        resolve();
+                    }
+                }, 10000);
+            });
+        }
+
+        // ── Apply Data from Display ──────────────────────────────────────────────
+        function applyData(data) {
+            if (!data || !data.items) return;
+            eventInfo = data.event || {};
+            // Keep only visible items
+            currentItems = data.items.filter(i => !i.isHidden);
+            currentItems.sort((a, b) => (b.currentBid || 0) - (a.currentBid || 0));
+
+            showAuctionScreen();
+        }
+
+        // ── Show Auction Screen ──────────────────────────────────────────────────
+        function showAuctionScreen() {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('codeScreen').style.display = 'none';
+            document.getElementById('auctionScreen').style.display = 'block';
+            document.getElementById('errorScreen').style.display = 'none';
+
+            document.getElementById('eventName').textContent = eventInfo.name || 'Auction';
+            document.getElementById('eventSubtitle').textContent = eventInfo.subtitle || '';
+            document.getElementById('bidderNameDisplay').textContent = bidderInfo?.name || '';
+
             renderItems();
         }
 
+        // ── Render Items ─────────────────────────────────────────────────────────
         function renderItems() {
-            const items = eventData.auction_items || [];
-            const sortedItems = items
-                .filter(item => !item.is_hidden)
-                .sort((a, b) => b.current_bid - a.current_bid);
+            const sorted = [...currentItems].sort((a, b) => (b.currentBid || 0) - (a.currentBid || 0));
 
-            const html = sortedItems.map((item, index) => `
-                <div class="item-card">
+            if (!sorted.length) {
+                document.getElementById('itemsList').innerHTML =
+                    '<div class="empty-items"><p>No items available for bidding.</p></div>';
+                return;
+            }
+
+            document.getElementById('itemsList').innerHTML = sorted.map((item, index) => `
+                <div class="item-card" id="card_${escapeAttr(item.id)}">
                     <div class="item-header">
                         <div class="item-name">${escapeHtml(item.name)}</div>
                         <div class="item-rank">#${index + 1}</div>
@@ -417,105 +545,163 @@
                     <div class="bid-info">
                         <div>
                             <div class="bid-label">Current Bid</div>
-                            <div class="current-bid">$${item.current_bid.toLocaleString()}</div>
+                            <div class="current-bid" id="amt_${escapeAttr(item.id)}">$${(item.currentBid || 0).toLocaleString()}</div>
                         </div>
-                        <div style="text-align: right;">
-                            <div class="bid-label">Starting Bid</div>
-                            <div style="font-weight: 600; color: #64748b;">$${item.starting_bid.toLocaleString()}</div>
+                        <div style="text-align:right">
+                            <div class="bid-label">Starting</div>
+                            <div class="starting-bid">$${(item.startingBid || 0).toLocaleString()}</div>
                         </div>
                     </div>
                     <div class="bid-form">
                         <input
                             type="number"
+                            id="inp_${escapeAttr(item.id)}"
                             class="bid-input"
-                            id="bid_${item.id}"
                             placeholder="Your bid"
-                            min="${item.current_bid + 1}"
+                            min="${(item.currentBid || 0) + 1}"
                             step="1"
                         >
-                        <button class="bid-button" onclick="placeBid(${item.id})">
-                            Place Bid
-                        </button>
+                        <button
+                            id="btn_${escapeAttr(item.id)}"
+                            class="bid-button"
+                            onclick="placeBid('${escapeAttr(item.id)}', '${escapeAttr(item.name)}')"
+                        >Place Bid</button>
                     </div>
+                    <div id="msg_${escapeAttr(item.id)}" class="item-msg"></div>
                 </div>
             `).join('');
-
-            document.getElementById('itemsList').innerHTML = html || '<div class="empty"><p>No items available for bidding</p></div>';
         }
 
-        async function placeBid(itemId) {
-            const input = document.getElementById(`bid_${itemId}`);
-            const button = input.nextElementSibling;
-            const amount = parseFloat(input.value);
+        // ── Place Bid ────────────────────────────────────────────────────────────
+        async function placeBid(itemId, itemName) {
+            const input = document.getElementById(`inp_${itemId}`);
+            const button = document.getElementById(`btn_${itemId}`);
+            const amount = parseFloat(input?.value);
 
-            if (!amount || isNaN(amount)) {
-                showMessage('Please enter a valid bid amount', 'error');
+            if (!amount || isNaN(amount) || amount <= 0) {
+                showItemMsg(itemId, 'Please enter a valid bid amount.', 'error');
                 return;
             }
 
-            const item = eventData.auction_items.find(i => i.id === itemId);
-            if (!item) return;
-
-            if (amount <= item.current_bid) {
-                showMessage(`Bid must be higher than $${item.current_bid}`, 'error');
+            const item = currentItems.find(i => String(i.id) === String(itemId));
+            if (item && amount <= (item.currentBid || 0)) {
+                showItemMsg(itemId, `Bid must be higher than the current bid of $${(item.currentBid || 0).toLocaleString()}.`, 'error');
                 return;
             }
+
+            if (button) { button.disabled = true; button.textContent = 'Placing...'; }
 
             try {
                 const sb = SupabaseClient.get();
-                if (!sb) throw new Error('Bidding not available');
+                if (!sb) throw new Error('Bidding service unavailable.');
 
-                button.disabled = true;
-                button.textContent = 'Placing...';
-
-                const { error } = await sb
-                    .from('bids')
-                    .insert({
-                        item_id: itemId,
-                        bidder_name: bidderInfo.name,
-                        bidder_email: bidderInfo.email,
-                        amount: amount,
-                        status: 'accepted'
-                    });
+                // Store bid in database
+                const { error } = await sb.from('public_bids').insert({
+                    display_id: displayId,
+                    item_id: String(itemId),
+                    item_name: itemName,
+                    bidder_id: bidderInfo.id,
+                    bidder_name: bidderInfo.name,
+                    amount: amount
+                });
 
                 if (error) throw error;
 
-                showMessage('Bid placed successfully! 🎉', 'success');
-                input.value = '';
+                // Broadcast to display so it updates live
+                if (channel) {
+                    channel.send({
+                        type: 'broadcast',
+                        event: 'public_bid',
+                        payload: {
+                            itemId: String(itemId),
+                            itemName,
+                            bidderName: bidderInfo.name,
+                            amount
+                        }
+                    }).catch(() => {});
+                }
 
-            } catch (error) {
-                console.error('Error placing bid:', error);
-                showMessage(error.message || 'Failed to place bid', 'error');
+                // Update local state
+                if (item) item.currentBid = amount;
+                currentItems.sort((a, b) => (b.currentBid || 0) - (a.currentBid || 0));
+
+                showItemMsg(itemId, `✓ Bid of $${amount.toLocaleString()} placed!`, 'success');
+                if (input) input.value = '';
+                renderItems();
+
+            } catch (err) {
+                showItemMsg(itemId, err.message || 'Failed to place bid. Please try again.', 'error');
             } finally {
-                button.disabled = false;
-                button.textContent = 'Place Bid';
+                const btn = document.getElementById(`btn_${itemId}`);
+                if (btn) { btn.disabled = false; btn.textContent = 'Place Bid'; }
             }
         }
 
-        function showMessage(message, type) {
-            const container = document.getElementById('messageContainer');
-            const div = document.createElement('div');
-            div.className = type;
-            div.textContent = message;
-            container.appendChild(div);
-
-            setTimeout(() => div.remove(), 5000);
+        // ── UI Helpers ───────────────────────────────────────────────────────────
+        function showLoading(msg) {
+            document.getElementById('loadingMsg').textContent = msg || 'Loading...';
+            document.getElementById('loadingScreen').style.display = 'block';
+            document.getElementById('codeScreen').style.display = 'none';
+            document.getElementById('auctionScreen').style.display = 'none';
+            document.getElementById('errorScreen').style.display = 'none';
         }
 
-        function showError(message) {
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('errorState').style.display = 'block';
-            document.getElementById('errorMessage').textContent = message;
+        function hideLoading() {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('codeScreen').style.display = 'block';
+        }
+
+        function showCodeScreen() {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('codeScreen').style.display = 'block';
+        }
+
+        function showError(msg) {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('codeScreen').style.display = 'none';
+            document.getElementById('auctionScreen').style.display = 'none';
+            document.getElementById('errorScreen').style.display = 'block';
+            document.getElementById('errorMsg').textContent = msg;
+        }
+
+        function showCodeError(msg) {
+            const el = document.getElementById('codeError');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        function showItemMsg(itemId, msg, type) {
+            const el = document.getElementById(`msg_${itemId}`);
+            if (!el) return;
+            el.innerHTML = `<div class="${type}-msg">${escapeHtml(msg)}</div>`;
+            setTimeout(() => { if (el) el.innerHTML = ''; }, 6000);
         }
 
         function escapeHtml(text) {
             if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
         }
 
-        // Initialize
+        function escapeAttr(val) {
+            return String(val).replace(/[^a-zA-Z0-9_-]/g, '_');
+        }
+
+        // ── Code Input Formatting ────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('codeInput');
+            if (input) {
+                input.addEventListener('input', () => {
+                    input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') submitCode();
+                });
+                input.focus();
+            }
+        });
+
         init();
     </script>
 </body>
