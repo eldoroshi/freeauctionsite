@@ -366,6 +366,37 @@
         </div>
     </div>
 
+    <!-- Timer Modal -->
+    <div id="timerModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⏱️ Auction Timer</h2>
+                <button class="close-btn" onclick="closeTimerModal()">&times;</button>
+            </div>
+            <p style="color: var(--gray-600); font-size: 0.875rem; margin-bottom: 20px;">
+                Show a live countdown on the display screen. Turns yellow under 5 min, red under 1 min.
+            </p>
+            <div style="margin-bottom: 24px;">
+                <p style="font-size: 0.75rem; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Quick set</p>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                    <button onclick="setTimerQuick(15)"  style="padding: 10px; background: var(--gray-100); border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer;">15 min</button>
+                    <button onclick="setTimerQuick(30)"  style="padding: 10px; background: var(--gray-100); border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer;">30 min</button>
+                    <button onclick="setTimerQuick(60)"  style="padding: 10px; background: var(--gray-100); border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer;">1 hour</button>
+                    <button onclick="setTimerQuick(120)" style="padding: 10px; background: var(--gray-100); border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer;">2 hours</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="timerDatetime">Custom end time</label>
+                <input type="datetime-local" id="timerDatetime">
+            </div>
+            <div id="timerStatus" style="display:none; padding: 10px 14px; background: #fef3c7; border-radius: 8px; font-size: 0.875rem; color: #92400e; margin-bottom: 16px;"></div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" onclick="clearTimer()">Clear Timer</button>
+                <button class="btn btn-primary" onclick="saveTimer()">Set Timer</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Add Item Modal -->
     <div id="addModal" class="modal hidden">
         <div class="modal-content">
@@ -399,6 +430,18 @@
     </div>
 
     <button class="btn-add" onclick="openAddModal()">+</button>
+
+    <!-- Timer Control (available to all users) -->
+    <div style="position: fixed; bottom: 480px; right: 20px; z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <span style="color: #64748b; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Timer</span>
+        <button id="timerBtn" onclick="openTimerModal()" style="
+            width: 60px; height: 60px; border-radius: 50%;
+            background: #8b5cf6; color: white; border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(139,92,246,0.4);
+            cursor: pointer; transition: all 0.2s;
+        " title="Set Auction Timer">⏱️</button>
+    </div>
 
     <!-- Display Mode Controls (Premium) -->
     <div id="displayModeControls" style="display: none; position: fixed; bottom: 240px; right: 20px; z-index: 100; flex-direction: column; gap: 8px; align-items: center;">
@@ -849,6 +892,10 @@
             if (e.target === this) closeAddModal();
         });
 
+        document.getElementById('timerModal').addEventListener('click', function(e) {
+            if (e.target === this) closeTimerModal();
+        });
+
         // Keyboard shortcuts — window-level listener for maximum reliability
         window.addEventListener('keydown', (e) => {
             // Skip when typing in a form field
@@ -860,6 +907,7 @@
             if (e.key === 'Escape') {
                 closeEditModal();
                 closeAddModal();
+                closeTimerModal();
                 return;
             }
 
@@ -993,6 +1041,75 @@
         // Check silent mode feature on init
         setTimeout(checkSilentModeFeature, 1000);
 
+        // ── Timer Functions ───────────────────────────────────────────────
+        function openTimerModal() {
+            const endsAt = currentData?.event?.auctionEndsAt;
+            const input  = document.getElementById('timerDatetime');
+            const status = document.getElementById('timerStatus');
+
+            if (endsAt) {
+                // Pre-fill datetime-local (must be local time ISO slice)
+                const dt     = new Date(endsAt);
+                const offset = dt.getTimezoneOffset() * 60000;
+                input.value  = new Date(dt - offset).toISOString().slice(0, 16);
+
+                const diff = dt - Date.now();
+                if (diff > 0) {
+                    const totalMin = Math.ceil(diff / 60000);
+                    const h = Math.floor(totalMin / 60), m = totalMin % 60;
+                    status.textContent = `Timer active — ${h ? h + 'h ' : ''}${m}m remaining`;
+                } else {
+                    status.textContent = 'Timer has expired';
+                }
+                status.style.display = 'block';
+            } else {
+                input.value = '';
+                status.style.display = 'none';
+            }
+
+            document.getElementById('timerModal').classList.remove('hidden');
+        }
+
+        function closeTimerModal() {
+            document.getElementById('timerModal').classList.add('hidden');
+        }
+
+        function setTimerQuick(minutes) {
+            const end    = new Date(Date.now() + minutes * 60000);
+            const offset = end.getTimezoneOffset() * 60000;
+            document.getElementById('timerDatetime').value = new Date(end - offset).toISOString().slice(0, 16);
+        }
+
+        function saveTimer() {
+            const val = document.getElementById('timerDatetime').value;
+            if (!val) { alert('Please select an end time'); return; }
+            const end = new Date(val);
+            if (isNaN(end.getTime())) { alert('Invalid date/time'); return; }
+            if (end <= new Date()) { alert('End time must be in the future'); return; }
+            if (!currentData.event) currentData.event = {};
+            currentData.event.auctionEndsAt = end.toISOString();
+            saveDisplay();
+            closeTimerModal();
+            updateTimerBtn(true);
+            showSaveIndicator('⏱️ Timer set!');
+        }
+
+        function clearTimer() {
+            if (!currentData?.event) return;
+            delete currentData.event.auctionEndsAt;
+            saveDisplay();
+            closeTimerModal();
+            updateTimerBtn(false);
+            showSaveIndicator('Timer cleared');
+        }
+
+        function updateTimerBtn(active) {
+            const btn = document.getElementById('timerBtn');
+            if (!btn) return;
+            btn.style.background = active ? '#7c3aed' : '#8b5cf6';
+            btn.style.outline    = active ? '3px solid white' : 'none';
+        }
+
         // Display Mode Functions
         async function checkDisplayModeFeature() {
             if (isPremiumMode) {
@@ -1021,6 +1138,9 @@
         }
 
         setTimeout(checkDisplayModeFeature, 1100);
+
+        // Reflect existing timer state on the button after data loads
+        setTimeout(() => updateTimerBtn(!!currentData?.event?.auctionEndsAt), 1200);
     </script>
 </body>
 </html>

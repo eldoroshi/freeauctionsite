@@ -339,6 +339,32 @@
             0%, 100% { opacity: 0; }
             10%, 80% { opacity: 1; }
         }
+
+        /* Countdown Timer */
+        .auction-countdown {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 14px;
+            font-size: clamp(1.1rem, 2.5vw, 2rem);
+            font-weight: 700;
+        }
+        .timer-label {
+            color: rgba(255,255,255,0.45);
+            font-size: 0.6em;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .timer-value {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 2px;
+        }
+        .timer-normal  { color: #10b981; }
+        .timer-warning { color: #f59e0b; }
+        .timer-urgent  { color: #ef4444; animation: timerUrgent 0.7s ease-in-out infinite alternate; }
+        .timer-closed  { color: #ef4444; font-size: clamp(1.2rem, 3vw, 2.5rem); letter-spacing: 3px; text-transform: uppercase; }
+        @keyframes timerUrgent { from { opacity: 1; } to { opacity: 0.45; } }
     </style>
 </head>
 <body>
@@ -376,7 +402,41 @@
         let carouselInterval = null;
         let carouselProgress = 0;
         let carouselProgressInterval = null;
+        let countdownInterval = null;
         const CAROUSEL_DURATION = 6000; // ms per item
+
+        // ── Countdown ticker — updates #auctionCountdown every second ──────
+        function startCountdownTicker(endsAt) {
+            if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+            if (!endsAt) return;
+
+            function tick() {
+                const el = document.getElementById('auctionCountdown');
+                if (!el) { clearInterval(countdownInterval); countdownInterval = null; return; }
+
+                const diff = new Date(endsAt).getTime() - Date.now();
+
+                if (diff <= 0) {
+                    el.innerHTML = '<span class="timer-closed">⏰ Auction Closed</span>';
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    return;
+                }
+
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                const timeStr = h > 0
+                    ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+                    : `${m}:${String(s).padStart(2,'0')}`;
+
+                const cls = diff < 60000 ? 'timer-urgent' : diff < 300000 ? 'timer-warning' : 'timer-normal';
+                el.innerHTML = `<span class="timer-label">Closes in</span><span class="timer-value ${cls}">${timeStr}</span>`;
+            }
+
+            tick();
+            countdownInterval = setInterval(tick, 1000);
+        }
 
         // Apply an update to the display (deduplicates identical data)
         function applyUpdate(data) {
@@ -593,6 +653,17 @@
             } else {
                 renderLeaderboard(data);
             }
+            startCountdownTicker(data.event?.auctionEndsAt);
+        }
+
+        // Header HTML helper (shared across render modes)
+        function headerHtml(data) {
+            return `
+                <div class="header">
+                    <h1>${escapeHtml(data.event?.name || 'Auction')}</h1>
+                    ${data.event?.subtitle ? `<p>${escapeHtml(data.event.subtitle)}</p>` : ''}
+                    ${data.event?.auctionEndsAt ? `<div id="auctionCountdown" class="auction-countdown"></div>` : ''}
+                </div>`;
         }
 
         // Footer HTML helper
@@ -621,10 +692,7 @@
         function renderLeaderboard(data) {
             stopCarousel();
             document.getElementById('app').innerHTML = `
-                <div class="header">
-                    <h1>${escapeHtml(data.event?.name || 'Auction')}</h1>
-                    ${data.event?.subtitle ? `<p>${escapeHtml(data.event.subtitle)}</p>` : ''}
-                </div>
+                ${headerHtml(data)}
                 <div class="items">
                     ${data.items.map((item, index) => `
                         <div class="item" style="animation-delay:${index * 0.1}s">
@@ -655,10 +723,7 @@
                 `<div class="spotlight-dot ${d === i ? 'active' : ''}" onclick="renderSpotlight(currentData,${d})"></div>`
             ).join('');
             document.getElementById('app').innerHTML = `
-                <div class="header">
-                    <h1>${escapeHtml(data.event?.name || 'Auction')}</h1>
-                    ${data.event?.subtitle ? `<p>${escapeHtml(data.event.subtitle)}</p>` : ''}
-                </div>
+                ${headerHtml(data)}
                 <div class="spotlight-wrap">
                     <div class="spotlight-card">
                         <div class="spotlight-rank">#${i + 1}</div>
@@ -700,10 +765,7 @@
             const items = data.items;
             const item = items[idx];
             document.getElementById('app').innerHTML = `
-                <div class="header">
-                    <h1>${escapeHtml(data.event?.name || 'Auction')}</h1>
-                    ${data.event?.subtitle ? `<p>${escapeHtml(data.event.subtitle)}</p>` : ''}
-                </div>
+                ${headerHtml(data)}
                 <div class="carousel-wrap">
                     <div class="carousel-progress"><div class="carousel-bar" id="carouselBar" style="width:0%"></div></div>
                     <div class="spotlight-card">
@@ -717,6 +779,7 @@
                     </div>
                 </div>
                 ${footerHtml(data)}`;
+            startCountdownTicker(data.event?.auctionEndsAt);
         }
 
         function stopCarousel() {
@@ -794,6 +857,7 @@
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
             if (pollInterval) clearInterval(pollInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
             if (syncManager) syncManager.unsubscribe();
             if (window._displayBroadcastChannel) window._displayBroadcastChannel.close();
             if (window._supabaseDisplayChannel) {
