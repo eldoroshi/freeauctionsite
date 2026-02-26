@@ -489,7 +489,7 @@
             <div class="events-section">
                 <div class="events-header">
                     <h2>Your Events</h2>
-                    <a href="../index.html#tool" class="btn btn-primary">+ Create New Event</a>
+                    <button onclick="openCreateModal()" class="btn btn-primary">+ Create New Event</button>
                 </div>
                 <div id="eventsList"></div>
             </div>
@@ -592,40 +592,90 @@
             }
         }
 
+        // Map of eventId → event name (avoids escaping issues in onclick attrs)
+        let eventNameMap = {};
+
         async function loadEvents() {
             try {
-                const events = await storage.getAllEvents();
+                // Always load from localStorage first — this is where events created
+                // via the homepage tool live (short IDs, not UUIDs).
+                const localEvents = storage._getAllFromLocalStorage
+                    ? storage._getAllFromLocalStorage()
+                    : [];
 
-                document.getElementById('totalEvents').textContent = events.length;
-                document.getElementById('activeEvents').textContent = events.filter(e => e.status === 'active').length;
+                // Also try Supabase for cloud-saved events (Pro users, other devices)
+                let dbEvents = [];
+                try {
+                    const sb = SupabaseClient.get && SupabaseClient.get();
+                    if (sb) {
+                        const user = await SupabaseClient.getCurrentUser();
+                        if (user) {
+                            const { data } = await sb
+                                .from('events')
+                                .select('id, name, subtitle, status, updated_at')
+                                .eq('owner_id', user.id)
+                                .order('updated_at', { ascending: false });
+                            if (data) {
+                                dbEvents = data.map(e => ({
+                                    id: e.id,
+                                    name: e.name,
+                                    subtitle: e.subtitle,
+                                    status: e.status,
+                                    updatedAt: e.updated_at,
+                                    items: []
+                                }));
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log('Could not load cloud events:', e.message);
+                }
+
+                // Merge — localStorage takes precedence for duplicate IDs
+                const all = [...localEvents];
+                for (const de of dbEvents) {
+                    if (!all.find(e => e.id === de.id)) all.push(de);
+                }
+                // Sort by most recently updated
+                all.sort((a, b) => new Date(b.updatedAt || b.updated_at || 0) - new Date(a.updatedAt || a.updated_at || 0));
+
+                document.getElementById('totalEvents').textContent = all.length;
+                document.getElementById('activeEvents').textContent = all.filter(e => !e.status || e.status === 'active').length;
 
                 const eventsList = document.getElementById('eventsList');
 
-                if (events.length === 0) {
+                if (all.length === 0) {
                     eventsList.innerHTML = `
                         <div class="empty-state">
                             <h3>No events yet</h3>
-                            <p>Create your first auction display to get started!</p>
-                            <a href="../index.html#tool" class="btn btn-primary" style="display: inline-block; margin-top: 24px;">Create Event</a>
+                            <p>Create your first auction event to get started.</p>
+                            <button onclick="openCreateModal()" class="btn btn-primary" style="margin-top: 24px;">+ Create Event</button>
                         </div>
                     `;
                     return;
                 }
 
-                eventsList.innerHTML = events.map(event => `
-                    <div class="event-card">
-                        <h3>${escapeHtml(event.event?.name || event.name || 'Untitled Event')}</h3>
-                        <p>${escapeHtml(event.event?.subtitle || event.subtitle || '')}</p>
-                        <div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 16px;">
-                            ${event.items?.length || 0} items • Updated ${formatDate(event.updatedAt || event.updated_at)}
+                // Build name map for safe use in onclick handlers
+                eventNameMap = {};
+                eventsList.innerHTML = all.map(event => {
+                    const name = event.event?.name || event.name || 'Untitled Event';
+                    const subtitle = event.event?.subtitle || event.subtitle || '';
+                    eventNameMap[event.id] = name;
+                    return `
+                        <div class="event-card">
+                            <h3>${escapeHtml(name)}</h3>
+                            ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
+                            <div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 16px;">
+                                ${event.items?.length || 0} item${(event.items?.length || 0) === 1 ? '' : 's'} • Updated ${formatDate(event.updatedAt || event.updated_at)}
+                            </div>
+                            <div class="event-actions" style="flex-wrap: wrap;">
+                                <a href="../display.html?id=${event.id}" target="_blank" class="btn btn-primary">Open Display</a>
+                                <a href="../control.html?id=${event.id}" class="btn btn-secondary">Control Panel</a>
+                                <button onclick="openBidderModal('${event.id}')" class="btn btn-bidders">👥 Manage Bidders</button>
+                            </div>
                         </div>
-                        <div class="event-actions">
-                            <a href="../display.html?id=${event.id}" target="_blank" class="btn btn-primary">Open Display</a>
-                            <a href="../control.html?id=${event.id}" class="btn btn-secondary">Control Panel</a>
-                            <button onclick="openBidderModal('${event.id}', '${escapeHtml(event.event?.name || event.name || 'Untitled Event').replace(/'/g, "\\'")}')" class="btn btn-bidders">👥 Manage Bidders</button>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
 
             } catch (error) {
                 console.error('Error loading events:', error);
@@ -636,6 +686,199 @@
                     </div>
                 `;
             }
+        }
+
+        // ── Create Event Modal ──────────────────────────────────────────────────
+
+        function openCreateModal() {
+            const modal = document.createElement('div');
+            modal.id = 'createModal';
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2>✨ Create New Event</h2>
+                        <button class="modal-close" onclick="closeCreateModal()">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="createError" class="modal-error"></div>
+
+                        <div class="modal-section">
+                            <h3>Event Details</h3>
+                            <div style="margin-bottom: 14px;">
+                                <div class="form-field">
+                                    <label>Event Name *</label>
+                                    <input type="text" id="createName" placeholder="e.g. Spring Gala 2026">
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label>Subtitle (optional)</label>
+                                <input type="text" id="createSubtitle" placeholder="e.g. Silent Auction">
+                            </div>
+                        </div>
+
+                        <div class="modal-section">
+                            <h3>Auction Items</h3>
+                            <div id="createItemsList"></div>
+                            <button onclick="addCreateItem()" style="margin-top:10px; width:100%; padding:10px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; cursor:pointer; font-weight:600; color:#64748b; font-size:0.875rem;">
+                                + Add Item
+                            </button>
+                        </div>
+
+                        <div style="display:flex; gap:12px; padding-top:4px;">
+                            <button id="createSubmitBtn" onclick="submitCreateEvent()" class="btn btn-primary" style="flex:1; padding:14px;">
+                                Create Event
+                            </button>
+                            <button onclick="closeCreateModal()" class="btn btn-secondary" style="padding:14px 24px;">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e => { if (e.target === modal) closeCreateModal(); });
+            addCreateItem();
+            document.getElementById('createName')?.focus();
+        }
+
+        function addCreateItem() {
+            const container = document.getElementById('createItemsList');
+            if (!container) return;
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; gap:8px; margin-bottom:8px; align-items:center;';
+            row.innerHTML = `
+                <input type="text" placeholder="Item name *" class="ci-name"
+                    style="flex:2; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.875rem;">
+                <input type="number" placeholder="Starting bid ($)" min="0" class="ci-bid"
+                    style="flex:1; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.875rem;">
+                <button onclick="this.parentElement.remove()"
+                    style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.125rem; padding:4px 6px;">✕</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal')?.remove();
+        }
+
+        async function submitCreateEvent() {
+            const name = (document.getElementById('createName')?.value || '').trim();
+            const subtitle = (document.getElementById('createSubtitle')?.value || '').trim();
+            const errEl = document.getElementById('createError');
+
+            if (!name) {
+                if (errEl) { errEl.textContent = 'Please enter an event name.'; errEl.style.display = 'block'; }
+                return;
+            }
+            if (errEl) errEl.style.display = 'none';
+
+            // Collect items
+            const items = [];
+            document.querySelectorAll('#createItemsList > div').forEach(row => {
+                const n = row.querySelector('.ci-name')?.value.trim();
+                const b = parseFloat(row.querySelector('.ci-bid')?.value) || 0;
+                if (n) items.push({
+                    id: Date.now() + Math.floor(Math.random() * 10000),
+                    name: n, description: '',
+                    startingBid: b, currentBid: b,
+                    createdAt: new Date().toISOString()
+                });
+            });
+
+            const btn = document.getElementById('createSubmitBtn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
+
+            try {
+                const displayId = Math.random().toString(36).substr(2, 8);
+                const displayData = {
+                    event: { name, subtitle },
+                    items: items.sort((a, b) => b.currentBid - a.currentBid),
+                    updatedAt: new Date().toISOString()
+                };
+
+                // Save to localStorage (primary storage for homepage tool)
+                localStorage.setItem('bidscreen_items', JSON.stringify(items));
+                localStorage.setItem('bidscreen_event', JSON.stringify({ name, subtitle }));
+                localStorage.setItem(`bidscreen_display_${displayId}`, JSON.stringify(displayData));
+                localStorage.setItem('bidscreen_active_display_id', displayId);
+
+                // Also try cloud save for Pro users
+                try {
+                    await storage.initialize();
+                    await storage.saveEvent(displayId, displayData);
+                } catch (e) { /* cloud save optional */ }
+
+                closeCreateModal();
+
+                // Show links modal
+                const origin = window.location.origin;
+                const displayUrl = `${origin}/display?id=${displayId}`;
+                const controlUrl = `${origin}/control?id=${displayId}`;
+
+                const linksModal = document.createElement('div');
+                linksModal.className = 'modal-overlay';
+                linksModal.innerHTML = `
+                    <div class="modal">
+                        <div class="modal-header">
+                            <h2>🎉 Event Created!</h2>
+                            <button class="modal-close" onclick="this.closest('.modal-overlay').remove(); loadEvents();">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="color:#64748b; margin-bottom:24px;">
+                                <strong>${escapeHtml(name)}</strong> is ready.
+                                ${items.length === 0 ? '<br><span style="color:#f59e0b;">Tip: Add items via the Control Panel.</span>' : ''}
+                            </p>
+
+                            <div style="margin-bottom:18px;">
+                                <label style="display:block; font-weight:600; margin-bottom:8px; font-size:0.875rem;">📺 Display Link (TV / Projector)</label>
+                                <div style="display:flex; gap:8px;">
+                                    <input type="text" value="${displayUrl}" readonly
+                                        style="flex:1; padding:10px 14px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.8rem; background:#f8fafc;">
+                                    <button onclick="copyText('${displayUrl}', this)" class="btn btn-secondary">Copy</button>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:28px;">
+                                <label style="display:block; font-weight:600; margin-bottom:8px; font-size:0.875rem;">📱 Control Link (Your Phone)</label>
+                                <div style="display:flex; gap:8px;">
+                                    <input type="text" value="${controlUrl}" readonly
+                                        style="flex:1; padding:10px 14px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.8rem; background:#f8fafc;">
+                                    <button onclick="copyText('${controlUrl}', this)" class="btn btn-secondary">Copy</button>
+                                </div>
+                            </div>
+
+                            <div style="display:flex; gap:12px;">
+                                <a href="${displayUrl}" target="_blank" class="btn btn-primary" style="flex:1; padding:12px; text-align:center;">Open Display</a>
+                                <a href="${controlUrl}" class="btn btn-secondary" style="flex:1; padding:12px; text-align:center;">Control Panel</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(linksModal);
+                linksModal.addEventListener('click', e => {
+                    if (e.target === linksModal) { linksModal.remove(); loadEvents(); }
+                });
+
+                await loadEvents();
+
+            } catch (err) {
+                if (errEl) { errEl.textContent = err.message || 'Failed to create event.'; errEl.style.display = 'block'; }
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'Create Event'; }
+            }
+        }
+
+        function copyText(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                if (btn) {
+                    const orig = btn.textContent;
+                    btn.textContent = '✓ Copied';
+                    btn.style.background = '#d1fae5';
+                    btn.style.color = '#065f46';
+                    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
+                }
+            }).catch(() => prompt('Copy this link:', text));
         }
 
         function escapeHtml(text) {
@@ -676,7 +919,8 @@
             return code;
         }
 
-        async function openBidderModal(eventId, eventName) {
+        async function openBidderModal(eventId) {
+            const eventName = eventNameMap[eventId] || eventId;
             activeBidderEventId = eventId;
             activeBidderEventName = eventName;
 
