@@ -139,7 +139,9 @@
         .current-bid { font-size: 1.75rem; font-weight: 800; color: #10b981; }
         .starting-bid { font-weight: 600; color: #64748b; font-size: 1rem; }
 
-        .bid-form { display: flex; gap: 8px; }
+        .bid-form { display: flex; flex-direction: column; gap: 8px; }
+        .bid-form-row { display: flex; gap: 8px; }
+        .min-bid-label { font-size: 0.8rem; color: #64748b; font-weight: 600; letter-spacing: 0.02em; }
         .bid-input {
             flex: 1;
             padding: 14px 16px;
@@ -489,13 +491,16 @@
                         </div>
                     </div>
                     <div class="bid-form">
-                        <input type="number" id="inp_${escapeAttr(item.id)}"
-                            class="bid-input" placeholder="Your bid"
-                            min="${(item.currentBid || 0) + 1}" step="1">
-                        <button id="btn_${escapeAttr(item.id)}" class="bid-button"
-                            onclick="placeBid('${escapeAttr(item.id)}', '${escapeAttr(item.name)}')">
-                            Place Bid
-                        </button>
+                        <div class="min-bid-label">Minimum bid: $${((item.currentBid || 0) + 1).toLocaleString()}</div>
+                        <div class="bid-form-row">
+                            <input type="number" id="inp_${escapeAttr(item.id)}"
+                                class="bid-input" placeholder="Min $${((item.currentBid || 0) + 1).toLocaleString()}"
+                                min="${(item.currentBid || 0) + 1}" step="1">
+                            <button id="btn_${escapeAttr(item.id)}" class="bid-button"
+                                onclick="placeBid('${escapeAttr(item.id)}', '${escapeAttr(item.name)}')">
+                                Place Bid
+                            </button>
+                        </div>
                     </div>
                     <div id="msg_${escapeAttr(item.id)}" class="item-msg"></div>
                 </div>
