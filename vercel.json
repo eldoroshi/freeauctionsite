@@ -3,6 +3,26 @@
   "trailingSlash": false,
   "buildCommand": null,
   "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/school-auction-display",        "destination": "/pages/school-auction-display" },
+    { "source": "/nonprofit-auction-display",     "destination": "/pages/nonprofit-auction-display" },
+    { "source": "/church-auction-display",        "destination": "/pages/church-auction-display" },
+    { "source": "/gala-auction-display",          "destination": "/pages/gala-auction-display" },
+    { "source": "/silent-auction-display",        "destination": "/pages/silent-auction-display" },
+    { "source": "/sports-booster-auction-display","destination": "/pages/sports-booster-auction-display" },
+    { "source": "/auction-leaderboard",           "destination": "/pages/auction-leaderboard" },
+    { "source": "/givebutter-alternative",        "destination": "/pages/alternatives/givebutter-alternative" },
+    { "source": "/handbid-alternative",           "destination": "/pages/alternatives/handbid-alternative" },
+    { "source": "/galabid-alternative",           "destination": "/pages/alternatives/galabid-alternative" },
+    { "source": "/login",                         "destination": "/pages/login" },
+    { "source": "/signup",                        "destination": "/pages/signup" },
+    { "source": "/dashboard",                     "destination": "/pages/dashboard" },
+    { "source": "/checkout-success",              "destination": "/pages/checkout-success" },
+    { "source": "/about",                         "destination": "/pages/about" },
+    { "source": "/privacy",                       "destination": "/pages/privacy" },
+    { "source": "/contact",                       "destination": "/pages/contact" },
+    { "source": "/bid",                           "destination": "/pages/bid" }
+  ],
   "headers": [
     {
       "source": "/config/(.*)",

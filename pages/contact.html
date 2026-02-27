@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact | FreeAuctionSite</title>
+    <meta name="description" content="Get in touch with the FreeAuctionSite team. We're here to help with your auction display setup, billing questions, or feature requests.">
+    <link rel="canonical" href="https://freeauctionsite.com/contact">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+        .contact-form { background: white; border-radius: 16px; padding: 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+        .contact-form h2 { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 8px; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+            font-size: 0.95rem; font-family: inherit; color: #1e293b; background: #f8fafc;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none; border-color: #6366f1; background: white;
+        }
+        .form-group textarea { min-height: 140px; resize: vertical; }
+        .contact-info h3 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+        .contact-info p { color: #64748b; line-height: 1.7; margin-bottom: 32px; }
+        .contact-card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+        .contact-card-icon { font-size: 2rem; margin-bottom: 12px; }
+        .contact-card h4 { font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        .contact-card p { color: #64748b; font-size: 0.9rem; margin: 0; }
+        #formSuccess { display: none; background: #d1fae5; border-radius: 10px; padding: 20px; color: #065f46; font-weight: 600; text-align: center; margin-top: 16px; }
+        @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">
+                <span class="logo-icon">📺</span>
+                <span class="logo-text">FreeAuctionSite</span>
+            </a>
+            <div class="nav-links">
+                <a href="/#features">Features</a>
+                <a href="/#use-cases">Use Cases</a>
+                <a href="/#pricing">Pricing</a>
+                <a href="/#faq">FAQ</a>
+            </div>
+            <a href="/#tool" class="btn btn-primary">Create Display Free</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero" style="padding-top: 140px; padding-bottom: 60px;">
+        <div class="container">
+            <h1>Contact Us</h1>
+            <p class="hero-subtitle">Questions, feedback, or need help with your event? We're here.</p>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <section style="padding: 60px 0 80px; background: #f8fafc;">
+        <div class="container">
+            <div class="contact-grid">
+
+                <div class="contact-form">
+                    <h2>Send us a message</h2>
+                    <form id="contactForm" onsubmit="handleSubmit(event)">
+                        <div class="form-group">
+                            <label for="name">Your Name</label>
+                            <input type="text" id="name" placeholder="Sarah Johnson" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="sarah@school.org" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Topic</label>
+                            <select id="subject">
+                                <option value="setup">Help with setup</option>
+                                <option value="billing">Billing or account</option>
+                                <option value="feature">Feature request</option>
+                                <option value="bug">Report a bug</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" placeholder="Tell us what's on your mind..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">Send Message</button>
+                    </form>
+                    <div id="formSuccess">✓ Message sent! We'll get back to you within 24 hours.</div>
+                </div>
+
+                <div class="contact-info">
+                    <h3>We're here to help</h3>
+                    <p>Whether you're setting up your first auction or need help with a Pro feature, our team is happy to assist. We typically respond within one business day.</p>
+
+                    <div class="contact-card">
+                        <div class="contact-card-icon">⚡</div>
+                        <h4>Quick Setup Help</h4>
+                        <p>Check out our <a href="/#faq" style="color: #6366f1;">FAQ</a> for instant answers to the most common questions about setting up your display.</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-card-icon">💬</div>
+                        <h4>Email Support</h4>
+                        <p>Pro and Event plan users get priority email support. Free users are welcome too — we read every message.</p>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-card-icon">🐛</div>
+                        <h4>Bug Reports</h4>
+                        <p>Found something broken? Let us know and we'll fix it fast. Include your browser and device info if possible.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="logo">
+                        <span class="logo-icon">📺</span>
+                        <span class="logo-text">FreeAuctionSite</span>
+                    </a>
+                    <p>Simple, free auction display software for schools, nonprofits, and fundraisers.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Use Cases</h4>
+                    <ul>
+                        <li><a href="/school-auction-display">School Auctions</a></li>
+                        <li><a href="/nonprofit-auction-display">Nonprofit Events</a></li>
+                        <li><a href="/church-auction-display">Church Fundraisers</a></li>
+                        <li><a href="/gala-auction-display">Gala Events</a></li>
+                        <li><a href="/silent-auction-display">Silent Auctions</a></li>
+                        <li><a href="/sports-booster-auction-display">Sports Boosters</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Compare</h4>
+                    <ul>
+                        <li><a href="/givebutter-alternative">vs Givebutter</a></li>
+                        <li><a href="/handbid-alternative">vs Handbid</a></li>
+                        <li><a href="/galabid-alternative">vs GalaBid</a></li>
+                        <li><a href="/auction-leaderboard">Auction Leaderboard</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="/about">About</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Account</h4>
+                    <ul>
+                        <li><a href="/login">Sign In</a></li>
+                        <li><a href="/signup">Sign Up</a></li>
+                        <li><a href="/dashboard">Dashboard</a></li>
+                        <li><a href="/#pricing">Pricing</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 FreeAuctionSite. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function handleSubmit(e) {
+            e.preventDefault();
+            document.getElementById('contactForm').style.display = 'none';
+            document.getElementById('formSuccess').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
