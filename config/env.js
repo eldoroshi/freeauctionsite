@@ -17,7 +17,7 @@ const ENV_CONFIG = {
     SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhldXBxZnFkdnRnbmdvdHBjY3ppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5Mzg0NDksImV4cCI6MjA4NzUxNDQ0OX0.p42a_jv4dQqUw-prpkqxY_Qa0WZqpDkJKZrHA1ifbyY',
 
     // Stripe Configuration
-    STRIPE_PUBLISHABLE_KEY: 'pk_test_51T4MtNIOYXVb296P3du9veNmILj8siCLomWl4ILw0tVCGxoadbsqCwqe5p7M6Jymo4y1qOHsTNJTLiYLvNzvI8vh007muOkf0Y',
+    STRIPE_PUBLISHABLE_KEY: 'pk_live_51T4MtNIOYXVb296PEGSz7A7dKXxscjqYqpg2ibUwrrL3rU6s3mmnSiyISFO46uoao2d9rAydmPQaZGn4e4h6cUou00UdNY2dJm',
 
     // Feature Flags
     PREMIUM_FEATURES_ENABLED: true,  // Set to false to disable all premium features
