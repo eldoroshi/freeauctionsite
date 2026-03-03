@@ -623,16 +623,16 @@
                 } else {
                     // User is not logged in
                     authButtons.innerHTML = `
-                        <a href="pages/login.html" style="color: #6366f1; text-decoration: none; font-weight: 600;">Sign In</a>
-                        <a href="pages/signup.html" class="btn btn-primary">Sign Up Free</a>
+                        <a href="/login" style="color: #6366f1; text-decoration: none; font-weight: 600;">Sign In</a>
+                        <a href="/signup" class="btn btn-primary">Sign Up Free</a>
                     `;
                 }
             } catch (error) {
                 console.error('Error updating auth UI:', error);
                 // Show default UI on error
                 authButtons.innerHTML = `
-                    <a href="pages/login.html" style="color: #6366f1; text-decoration: none; font-weight: 600;">Sign In</a>
-                    <a href="pages/signup.html" class="btn btn-primary">Sign Up Free</a>
+                    <a href="/login" style="color: #6366f1; text-decoration: none; font-weight: 600;">Sign In</a>
+                    <a href="/signup" class="btn btn-primary">Sign Up Free</a>
                 `;
             }
         }
@@ -651,7 +651,7 @@
             if (!user) {
                 // Not logged in - redirect to signup
                 if (confirm('You need to sign up first. Create a free account now?')) {
-                    window.location.href = 'pages/signup.html?redirect=pricing&plan=pro';
+                    window.location.href = '/signup?redirect=pricing&plan=pro';
                 }
                 return;
             }
@@ -673,7 +673,7 @@
             if (!user) {
                 // Not logged in - redirect to signup
                 if (confirm('You need to sign up first. Create a free account now?')) {
-                    window.location.href = 'pages/signup.html?redirect=pricing&plan=event';
+                    window.location.href = '/signup?redirect=pricing&plan=event';
                 }
                 return;
             }

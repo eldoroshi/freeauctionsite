@@ -133,6 +133,22 @@
             color: #991b1b;
             border: 1px solid #fca5a5;
         }
+
+        @media (max-width: 480px) {
+            body {
+                align-items: flex-start;
+                padding: 24px 16px;
+            }
+
+            .auth-container {
+                padding: 32px 24px;
+                border-radius: 12px;
+            }
+
+            .auth-header h1 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -165,9 +181,9 @@
         </button>
 
         <div class="auth-links">
-            <p>Don't have an account? <a href="signup.html">Sign up</a></p>
-            <p><a href="forgot-password.html">Forgot password?</a></p>
-            <p><a href="../index.html">← Back to home</a></p>
+            <p>Don't have an account? <a href="/signup">Sign up</a></p>
+            <p><a href="/forgot-password">Forgot password?</a></p>
+            <p><a href="/">← Back to home</a></p>
         </div>
     </div>
 

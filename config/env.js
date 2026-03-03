@@ -14,7 +14,7 @@
 const ENV_CONFIG = {
     // Supabase Configuration
     SUPABASE_URL: 'https://heupqfqdvtgngotpcczi.supabase.co',
-    SUPABASE_ANON_KEY: 'sb_publishable_JJUWUolse6-ZRtSsccrojQ_ieN2nwxD',
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhldXBxZnFkdnRnbmdvdHBjY3ppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5Mzg0NDksImV4cCI6MjA4NzUxNDQ0OX0.p42a_jv4dQqUw-prpkqxY_Qa0WZqpDkJKZrHA1ifbyY',
 
     // Stripe Configuration
     STRIPE_PUBLISHABLE_KEY: 'pk_test_51T4MtNIOYXVb296P3du9veNmILj8siCLomWl4ILw0tVCGxoadbsqCwqe5p7M6Jymo4y1qOHsTNJTLiYLvNzvI8vh007muOkf0Y',
@@ -26,8 +26,8 @@ const ENV_CONFIG = {
     APP_URL: window.location.origin,
 
     // Pricing (Price IDs from Stripe)
-    STRIPE_PRICE_ID_PRO_MONTHLY: 'price_1T4MyRIOYXVb296PImeYTBfD',
-    STRIPE_PRICE_ID_EVENT_ONETIME: 'price_event_299',
+    STRIPE_PRICE_ID_PRO_MONTHLY: 'price_1T6d7TIOYXVb296PZITtpNgA',
+    STRIPE_PRICE_ID_EVENT_ONETIME: 'price_1T6d9NIOYXVb296PzbXQnBRw',
 
     // Development mode detection
     isDevelopment: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',

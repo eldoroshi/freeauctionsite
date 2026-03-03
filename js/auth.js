@@ -20,7 +20,8 @@ class AuthManager {
                 options: {
                     data: {
                         full_name: fullName
-                    }
+                    },
+                    emailRedirectTo: `${window.location.origin}/`
                 }
             });
 
@@ -237,7 +238,7 @@ class AuthManager {
             if (!sb) throw new Error('Supabase not initialized');
 
             const { error } = await sb.auth.resetPasswordForEmail(email, {
-                redirectTo: `${ENV_CONFIG.APP_URL}/pages/reset-password.html`
+                redirectTo: `${window.location.origin}/reset-password`
             });
 
             if (error) throw error;

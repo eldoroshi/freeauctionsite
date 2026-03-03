@@ -1220,3 +1220,144 @@ h3 { font-size: 1.25rem; }
     .public-bidding-preview { order: -1; }
     .phone-mockup { width: 260px; }
 }
+
+/* ── Mobile Improvements ───────────────────────────────────────────────────── */
+
+/* Tablet: 2-column grids (overrides the 1fr rules above) and tighter spacing */
+@media (max-width: 768px) {
+    /* Grids: use 2 cols at tablet instead of jumping straight to 1 */
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .use-cases-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    /* Reduce section vertical padding */
+    .how-it-works,
+    .features,
+    .use-cases,
+    .pricing,
+    .testimonials,
+    .faq,
+    .cta,
+    .public-bidding-section {
+        padding: 52px 0;
+    }
+
+    .tool-section {
+        padding: 52px 0;
+    }
+
+    .how-it-works h2,
+    .features h2,
+    .use-cases h2,
+    .testimonials h2,
+    .faq h2 {
+        margin-bottom: 36px;
+    }
+
+    /* Hero */
+    .hero {
+        padding: 120px 0 56px;
+    }
+
+    .hero-subtitle {
+        font-size: 1.05rem;
+    }
+
+    /* Compact navbar CTA button */
+    #authButtons .btn {
+        padding: 8px 14px;
+        font-size: 0.875rem;
+    }
+
+    /* Feature / use-case cards */
+    .feature,
+    .use-case {
+        padding: 24px;
+    }
+}
+
+/* Small mobile: single column, tighter everything */
+@media (max-width: 480px) {
+    h1 { font-size: 1.875rem; }
+    h2 { font-size: 1.5rem; }
+
+    .container {
+        padding: 0 16px;
+    }
+
+    /* Hero */
+    .hero {
+        padding: 100px 0 44px;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .hero-stats {
+        gap: 12px;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    /* Grids → single column */
+    .features-grid,
+    .use-cases-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .feature,
+    .use-case {
+        padding: 20px;
+    }
+
+    /* Demo */
+    .demo-screen {
+        padding: 20px 14px;
+    }
+
+    .demo-header h2 {
+        font-size: 1.1rem;
+    }
+
+    /* Tool actions: stack buttons */
+    .tool-actions {
+        flex-direction: column;
+    }
+
+    .tool-actions .btn-large {
+        width: 100%;
+    }
+
+    /* Pricing & cards */
+    .pricing-card {
+        padding: 24px 20px;
+    }
+
+    .testimonial {
+        padding: 24px 20px;
+    }
+
+    /* Footer: single column */
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .footer {
+        padding: 40px 0 24px;
+    }
+
+    /* Hide email text in navbar when logged in (prevents overflow) */
+    #authButtons > span > span:last-child {
+        display: none;
+    }
+}
